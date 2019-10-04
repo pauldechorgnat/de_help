@@ -1,0 +1,36 @@
+
+<!-- saved from url=(0029)http://localhost:5000/preview -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><script>
+    next_slide = function(element, number_of_images){
+        console.log(element);
+        var image_name = element.src.match('image[0-9]+\\.png')[0];
+        var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
+        var new_image_path = 'image' + new_image_number + '.png';
+        element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
+        return false;
+    }
+</script>
+
+</head><body><h1>HEllo wolrd</h1>
+
+<div>
+    <div>
+        <img src="./test_files/image0.png" onclick="next_slide(this, 3);return false;">
+    </div>
+</div></body><div id="screen-shader" style="
+            transition: opacity 0.1s ease 0s; 
+            z-index: 2147483647;
+            margin: 0; 
+            border-radius: 0; 
+            padding: 0; 
+            background: #fac563; 
+            pointer-events: none; 
+            position: fixed; 
+            top: -10%; 
+            right: -10%; 
+            width: 120%; 
+            height: 120%; 
+            opacity: 0.5920;
+            mix-blend-mode: multiply; 
+            display: none;
+        "></div></html>

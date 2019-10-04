@@ -1,0 +1,12 @@
+<script>
+    next_slide = function(element, number_of_images){
+        console.log(element);
+        var image_name = element.src.match('image[0-9]+\\.png')[0];
+        var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
+        var new_image_path = 'image' + new_image_number + '.png';
+        element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
+        return false;
+    }
+</script>
+
+{% include 'temp.html' %}

@@ -1,0 +1,49 @@
+<html>
+<head>
+    {{ pagedown.include_pagedown() }}
+    <style>
+.flask-pagedown-input {
+border-radius: 10px;
+}
+.flask-pagedown-preview {
+    border: 1px black;
+    border-radius: 10px;
+}
+
+    </style>
+</head>
+<body>
+<h1>Help for Data Scientest Data Engineering Platform content creation</h1>
+<script>
+    next_slide = function(element, number_of_images){
+        console.log(element);
+        var image_name = element.src.match('image[0-9]+\\.png')[0];
+        var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
+        var new_image_path = 'image' + new_image_number + '.png';
+        element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
+        return false;
+    }
+</script>
+
+<div style="display:inline-block;width:100%">
+    <div style="width:49%; float:left;">
+        <form method="POST" style="overflow: auto;">
+            {{ form.hidden_tag() }}
+            <div>
+                <b>{{ form.pagedown.label }}</b>:
+                {{ form.pagedown(rows=10, style='width:100%', only_input=True, default=text) }}
+            </div>
+            <button onclick="save();return false;">Save</button>
+            <button onclick="window.open('/preview');return false;">Preview</button>
+            <div>{{ form.submit() }}</div>
+
+        </form>
+    </div>
+     <div style="width:49%; float:right;">
+<!--            {% include 'temp.html' %}-->
+         {{ form.pagedown(only_preview=True) }}
+
+        </div>
+</div>
+</body>
+</html>

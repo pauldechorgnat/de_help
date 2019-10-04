@@ -1,0 +1,7 @@
+flask
+flask-pagedown
+flask-wtf
+flask-bootstrap
+flask-socketio
+markdown2
+Markdown

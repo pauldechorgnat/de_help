@@ -1,13 +1,15 @@
-# Hadoop
-## Distributed Architectures
+<hr style="border-color:#75DFC1; width:80%;"><center>
+<h1>Hadoop</h1>
+<h2>Distributed Architectures</h2></center>
+<hr style="border-color:#75DFC1; width:80%;">
 
 The volume of data created is exponentially increasing: to get a sense of this volume, each minute 103 million spam emails, 3.6 million Google searches, 450 000 tweets are exchanged. The forecast are that this volume will be multiplied by 10 in 2025. 
 
 In order to draw value from those data, we need to be able to store and exploit them. 
 
 
+<h2>Distributed Architectures vs Classical Architecture</h2>
 
-### Distributed Architectures vs Classical Architecture
 When faced to the problem of Big Data storage, there are mainly two ways to increase one's storing capacities or computing power:
 <ul>
 <li> <b>Scaling Up</b>: buying a more powerful machine</li>

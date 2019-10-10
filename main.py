@@ -41,9 +41,10 @@ def index():
             for s in sliders:
                 folder = s.split(' ')[1].replace('\r', '')
                 # print(app.static_folder)
+                url = os.path.join('https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/', folder)
                 folder = os.path.join('static', folder)
                 slider_temp = template_slider
-                slider_temp = slider_temp.replace('folder_placeholder', folder)
+                slider_temp = slider_temp.replace('folder_placeholder', url)
                 slider_temp = slider_temp.replace('number_of_images_placeholder', str(len(os.listdir(folder))))
 
                 html_from_md = html_from_md.replace(markdown(s), slider_temp)

@@ -58,6 +58,8 @@ def index():
 
 @app.route('/preview', methods=['GET'])
 def preview():
+    with open('final.html', 'w') as file:
+        file.write(render_template('preview.html'))
     return render_template('preview.html')
 
 

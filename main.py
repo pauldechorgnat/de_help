@@ -53,7 +53,6 @@ def index():
     with open('temp.md', 'r') as file:
         text = file.read()
     form.pagedown.data = text
-    print(form.pagedown.data)
     return render_template('index.html', form=form, text=text)
 
 @app.route('/preview', methods=['GET'])

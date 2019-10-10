@@ -1,7 +1,11 @@
 <html>
+
 <head>
     {{ pagedown.include_pagedown() }}
     <style>
+    body {
+    font-family: Source Sans Pro,sans-serif;
+    }
 .flask-pagedown-input {
 border-radius: 10px;
 }
@@ -31,7 +35,7 @@ border-radius: 10px;
             {{ form.hidden_tag() }}
             <div>
                 <b>{{ form.pagedown.label }}</b>:
-                {{ form.pagedown(rows=10, style='width:100%', only_input=True, default=text) }}
+                {{ form.pagedown(rows=50, style='width:100%', only_input=True, default=text) }}
             </div>
             <button onclick="save();return false;">Save</button>
             <button onclick="window.open('/preview');return false;">Preview</button>

@@ -12,7 +12,12 @@
     body {
         font-family: Source Sans Pro,sans-serif;
         }
-
+    .slider {
+        width:80%;
+        margin-left: auto;
+        margin-right: auto;
+        height:auto;
+    }
 </style>
 
 <h1>Hadoop</h1>
@@ -51,7 +56,7 @@ It is now cheaper to buy cheap hardware, also called commodity hardware, in numb
 <li><b>Replication</b>: data is replicated which means that we create copies of our partitions.
 </ul>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/partition_replication_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 5);return false;">
@@ -59,7 +64,7 @@ It is now cheaper to buy cheap hardware, also called commodity hardware, in numb
 </div>
 <p>At first you may think that this increases the demand for storage, which is true, but remember that storage is very cheap while data is key to business today. This partition/replication increases the security of the data. We cannot assume that the crash of a machine is an extraordinary event: this is an event that is going to happen so we need to have copies of the data that are available at any time:</p>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/redundancy_security_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 8);return false;">
@@ -72,7 +77,7 @@ In some companies where data is a very sensible issue, data is replicated inside
 
 <p>Partitioning data allows different machine to work on the same document at the same time. This is a fundamental  aspect of distributed architectures: since documents are spread over different machine, those machines can work in parallel at the same time. Moreover, since the data is already stored in small computable chunks on different machines, we do not need to move data from a machine to another: we just have to pick available machines that have the data. </p>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/distributed_computing_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 5);return false;">
@@ -93,7 +98,7 @@ In some companies where data is a very sensible issue, data is replicated inside
 
 <p></i></p>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/cap_theorem_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 5);return false;">
@@ -139,7 +144,7 @@ FOR EACH i IN list_of_values:<br>
 EMIT((key, s))
 </blockquote>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/mapreduce_wordcount_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 9);return false;">
@@ -168,7 +173,7 @@ FOR EACH token IN temp.keys:<br>
 &emsp;&emsp;EMIT((token, temp.get(token))
 </blockquote>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/wordcount_combiner_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 9);return false;">
@@ -182,7 +187,7 @@ FOR EACH token IN temp.keys:<br>
 
 <p>This ensures an even distribution of keys over reducer nodes: each machine should receive about the same number of different keys. The issue with that is that in some particular cases, some keys can be over-represented. This can create a bottleneck which will slow down the execution of the jobs.  </p>
 
-<div style="width:80%; margin-left: auto; margin-right: auto; height:auto;">
+<div class="slider">
     <center>
         <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/mapreduce_partitioners_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
              onclick="next_slide(this, 3);return false;">

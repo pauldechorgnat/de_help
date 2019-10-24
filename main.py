@@ -10,8 +10,8 @@ import re
 import os
 
 chevrons = {
-    'right': '&#x3009;',
-    'left': '&#x3008;'
+    'right': '&rsaquo;',
+    'left': '&lsaquo;'
 }
 
 
@@ -31,9 +31,9 @@ def format_text(text):
         codes.extend(code_block_end_re.split(c)[:-1])
     new_codes = []
     for code in codes:
-        if (not ('&#x3009;' in code)) or (not ('&#x3008;' in code)):
-            code = code.replace('<', '&#x3008;')
-            code = code.replace('>', '&#x3009;')
+        if (not ('&rsaquo;' in code)) or (not ('&lsaquo;' in code)):
+            code = code.replace('<', '&lsaquo;')
+            code = code.replace('>', '&rsaquo;')
         if len(breaking_line_html.findall(code)) == 0:
             code = code.replace('\r\n', '<br>\r\n')
         new_codes.append(code)
@@ -65,7 +65,7 @@ def index():
         text = form.pagedown.data
 
         text = format_text(text)
-        text = text.replace('&#x3008;br&#x3009;', '')
+        text = text.replace('&lsaquo;br&rsaquo;', '')
         #saving markdown content
         with open('temp.md', 'w') as file:
             file.write(text)

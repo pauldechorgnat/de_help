@@ -291,14 +291,14 @@ nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml<br>
 </code>
 </blockquote>
 
-Within the tags <code>&#x3008;configuration</code>, paste the following lines:
+Within the tags <code>&rsaquo;configuration</code>, paste the following lines:
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;fs.default.name &#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;hdfs://localhost:9000 &#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&rsaquo;property&lsaquo;<br>
+&rsaquo;name&lsaquo;fs.default.name &rsaquo;/name&lsaquo;<br>
+&rsaquo;value&lsaquo;hdfs://localhost:9000 &rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
 </code>
 </blockquote>
 
@@ -313,26 +313,26 @@ nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml<br>
 </code>
 </blockquote>
 
-Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:
+Within the tags <code>&rsaquo;configuration&lsaquo;</code>, paste the following lines:
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;dfs.replication&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;2&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;dfs.permission&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;false&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-    &#x3008;name&#x3009;dfs.name.dir&#x3008;/name&#x3009;<br>
-    &#x3008;value&#x3009;/home/ubuntu/data/namenode_data&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-    &#x3008;name&#x3009;dfs.data.dir&#x3008;/name&#x3009;<br>
-    &#x3008;value&#x3009;/home/ubuntu/data/datanode_data&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&rsaquo;property&lsaquo;<br>
+&rsaquo;name&lsaquo;dfs.replication&rsaquo;/name&lsaquo;<br>
+&rsaquo;value&lsaquo;2&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
+&rsaquo;property&lsaquo;<br>
+&rsaquo;name&lsaquo;dfs.permission&rsaquo;/name&lsaquo;<br>
+&rsaquo;value&lsaquo;false&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
+&rsaquo;property&lsaquo;<br>
+    &rsaquo;name&lsaquo;dfs.name.dir&rsaquo;/name&lsaquo;<br>
+    &rsaquo;value&lsaquo;/home/ubuntu/data/namenode_data&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
+&rsaquo;property&lsaquo;<br>
+    &rsaquo;name&lsaquo;dfs.data.dir&rsaquo;/name&lsaquo;<br>
+    &rsaquo;value&lsaquo;/home/ubuntu/data/datanode_data&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
 </code>
 </blockquote>
 
@@ -356,14 +356,14 @@ nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
 </code>
 </blockquote>
 
-Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:
+Within the tags <code>&rsaquo;configuration&lsaquo;</code>, paste the following lines:
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;mapreduce.framework.name&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;yarn&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&rsaquo;property&lsaquo;<br>
+&rsaquo;name&lsaquo;mapreduce.framework.name&rsaquo;/name&lsaquo;<br>
+&rsaquo;value&lsaquo;yarn&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
 </code>
 </blockquote>
 
@@ -379,18 +379,18 @@ nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml<br>
 </code>
 </blockquote>
 
-Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:
+Within the tags <code>&rsaquo;configuration&lsaquo;</code>, paste the following lines:
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;yarn.nodemanager.aux-services&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;mapreduce_shuffle&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;yarn.nodemanager.auxservices.mapreduce.shuffle.class&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;org.apache.hadoop.mapred.ShuffleHandler&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&rsaquo;property&lsaquo;<br>
+&rsaquo;name&lsaquo;yarn.nodemanager.aux-services&rsaquo;/name&lsaquo;<br>
+&rsaquo;value&lsaquo;mapreduce_shuffle&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
+&rsaquo;property&lsaquo;<br>
+&rsaquo;name&lsaquo;yarn.nodemanager.auxservices.mapreduce.shuffle.class&rsaquo;/name&lsaquo;<br>
+&rsaquo;value&lsaquo;org.apache.hadoop.mapred.ShuffleHandler&rsaquo;/value&lsaquo;<br>
+&rsaquo;/property&lsaquo;<br>
 </code>
 </blockquote>
 
@@ -526,7 +526,7 @@ The main difference between those two commands is that <code>-put</code> can han
 The syntax is: 
 <blockquote>
 <code>
-hdfs dfs -put &#x3008;local_file_path&#x3009; &#x3008;distributed_path&#x3009;<br>
+hdfs dfs -put &rsaquo;local_file_path&lsaquo; &rsaquo;distributed_path&lsaquo;<br>
 </code>
 </blockquote>
 
@@ -547,6 +547,15 @@ Or print its content using <code>-cat</code>:
 hdfs dfs -cat /data/sherlock_holmes.txt<br>
 </code>
 </blockquote>
+
+The contrary can be done using <code>-get</code>: 
+<blockquote>
+<code>
+hdfs dfs -get &rsaquo;distributed_path&lsaquo; &rsaquo;local_path&lsaquo;<br>
+</code>
+</blockquote>
+ 
+
 
 Of course we can do a lot of the usual commands of a filesystem: 
 
@@ -591,5 +600,6 @@ We can also use regular expressions to address multiple files at the same time.
 </ul>
 </i>
 
+&lsaquo;
 
 

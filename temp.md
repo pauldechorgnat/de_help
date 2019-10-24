@@ -415,6 +415,169 @@ export JAVA_HOME=/usr<br>
 
 <h3>Initialization</h3>
 
+First we need to format the namenode: 
+
+<blockquote>
+<code>
+hdfs namenode -format <br>
+</code>
+</blockquote>
+
+You can check that the folders containing the created by using the following command:
+
+<blockquote>
+<code>
+ls -l /home/ubuntu/ | grep _data<br>
+</code>
+</blockquote>
+
+Now we need to start the daemons for <b>HDFS</b>: 
+
+<blockquote>
+<code>
+/home/ubuntu/hadoop/sbin/start-dfs.sh<br>
+</code>
+</blockquote>
+
+You can see which <b>Java</b> processes are running at anytime by using the command <code>jps</code>.
+
+If you run this command here, you should see: 
+<ul>
+<li>DataNode</li>
+<li>NameNode</li>
+<li>SecondaryNameNode</li>
+</ul>
+
+Now we can start <b>YARN</b> daemons:
+
+<blockquote>
+<code>
+/home/ubuntu/hadoop/sbin/start-yarn.sh<br>
+</code>
+</blockquote>
+
+If you run <code>jps</code>, you should see: 
+<ul>
+<li>ResourceManager</li>
+<li>NodeManager</li>
+</ul>
+
+<h3>HDFS practice</h3>
+
+For this part, we have downloaded a book from <a href="https://www.gutenberg.org/">Project Gutenberg</a> library: The Adventures of Sherlock Holmes. It is a simple text file available on your local file system at <code>/home/ubuntu/sherlock_holmes.txt</code>. You can check the headers of the book with the following command: 
+
+<blockquote>
+<code>
+head -n 20 /home/ubuntu/sherlock_holmes.txt<br>
+</code>
+</blockquote>
+
+Most of the commands that we are going to use are based on the same pattern: <code>hdfs dfs -...</code> and we simply to write those commands into the shell. 
+
+First, let's create a folder named <code>data</code> in our distributed file system: 
+
+<blockquote>
+<code>
+hdfs dfs -mkdir /data<br>
+</code>
+</blockquote>
+
+You can check that the folder has indeed been created in the distributed file system and not in the local one by checking both systems at the root: 
+
+<b>Local file system</b>
+<blockquote>
+<code>
+ls / | grep data<br>
+</code>
+</blockquote>
+
+<b>HDFS</b>
+<blockquote>
+<code>
+hdfs dfs -ls / | grep data<br>
+</code>
+</blockquote>
+
+<code>hdfs dfs -ls</code> is used in the same way <code>ls</code> is used in a usual shell. HDFS is organised as any UNIX file sytem, starting from the root <code>/</code>. 
+
+We can also use the <code>-R</code> argument to have a recursive view of the folders: 
+<code>hdfs dfs -ls -R /</code>. 
+
+Notice that we always need to specify the absolute path as there are no current directory in <b>HDFS</b>.
+
+
+We are now about to put our book into <b>HDFS</b>: 
+
+<blockquote>
+<code>
+hdfs dfs -put /home/ubuntu/sherlock_holmes.txt /data/<br>
+</code>
+</blockquote>
+
+We can also use <code>-copyFromLocal</code>
+<blockquote>
+<code>
+hdfs dfs -copyFromLocal /home/ubuntu/sherlock_holmes.txt /data/<br>
+</code>
+</blockquote>
+
+The main difference between those two commands is that <code>-put</code> can handle multiple files at once while <code>-copyFromLocal</code> cannot. 
+
+The syntax is: 
+<blockquote>
+<code>
+hdfs dfs -put &#x3008;local_file_path&#x3009; &#x3008;distributed_path&#x3009;<br>
+</code>
+</blockquote>
+
+This command is very similar to <code>cp</code> or <code>scp</code>.
+
+We can check that the file is indeed here: 
+
+<blockquote>
+<code>
+hdfs dfs -ls -R /<br>
+</code>
+</blockquote>
+
+Or print its content using <code>-cat</code>: 
+
+<blockquote>
+<code>
+hdfs dfs -cat /data/sherlock_holmes.txt<br>
+</code>
+</blockquote>
+
+Of course we can do a lot of the usual commands of a filesystem: 
+
+<blockquote>
+<code>
+# removing a file<br>
+hdfs dfs -rm /path/to/file<br>
+<br>
+# removing a folder <br>
+hdfs dfs -rm -r /path/to/folder<br>
+<br>
+# copying a file from and to the distributed file system<br>
+hdfs dfs -cp /path/to/file1 /path/to/file2<br>
+<br>
+# copying a folder from and to the distributed file system<br>
+hdfs dfs -cp -r /path/to/folder1 /path/to/folder2<br>
+<br>
+<br>
+# moving  a file from and to the distributed file system <br>
+hdfs dfs -mv /path/to/file /new/path/to/file<br>
+<br>
+# moving  a folder from and to the distributed file system <br>
+hdfs dfs -mv -r /path/to/folder /new/path/to/folder<br>
+<br>
+</code>
+</blockquote>
+
+We can also use regular expressions to address multiple files at the same time. 
+
+
+
 
 
 

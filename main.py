@@ -69,7 +69,7 @@ def index():
         #saving markdown content
         with open('temp.md', 'w') as file:
             file.write(text)
-        # turning it into html
+        # turning it into htmlhe
         html_from_md = markdown(text, extras=['fenced-code-blocks'])
         sliders = re_md.findall(text)
 

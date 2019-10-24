@@ -143,3 +143,63 @@ Partitioners cannot be coded dynamically: you have to know a priori the balance 
 
 ## Apache Hadoop
 
+Apache Hadoop is an Open Source framework for distributed architectures. It was first released in 2006 by Yahoo! but is now an Apache Foundation project. It is a widely used tool in Big Data to manage distributed storage and computing. 
+
+<h3>Hadoop components</h3>
+
+Hadoop is mainly composed of 3 components: 
+<ul>
+<li><b>HDFS</b> (Hadoop Distributed File System): HDFS is in charge a of partition, replication, orchestration of data. </li>
+<li><b>YARN</b> (Yet Another Resource Negociator): YARN is in charge of orchestrating jobs and attributing resources.</li>
+<li><b>Hadoop MapReduce</b>: Hadoop MapReduce is a Java API that implements the meta-class to perform MapReduce Jobs</li>
+</ul>
+
+While it is coded in Java, Hadoop allows also to use other programming languages by writing in and parsing the standard output directly. This allows us to code MapReduce Jobs in Python, Ruby, or any other language given that you can read from the standard output. This utility is called <b>Hadoop Streaming</b>.
+
+<h3>HDFS</h3>
+
+As stated before, <b>HDFS</b> is in charge of distributed storage. There are multiple daemons running in HDFS: 
+<ul>
+<li><b>Datanode</b>: datanode is the daemon running on the slave nodes and that is in charge of allocating the interacting with the other daemons to make the data stored on the machine available.</li>
+<li><b>Namenode</b>: the namenode is a daemon running on a master node: it contains meta-data about the location of the partitions. The namenode interacts with the datanodes to read or write data. </li>
+<li><b>SecondaryNamenode</b>: secondary namenodes are daemons running on other master nodes. They are taking snapshots of the namenode at regular time intervals. If the namenode crashes, they are able to take over its role</li>
+</ul>
+
+<h3>YARN</h3>
+
+<b>YARN</b> is in charge of orchestrating work and jobs. There are several daemons running within YARN: 
+<ul>
+<li>The <b>Resource Manager</b> is the daemon in attributing resources to the different worker nodes. It runs on a master node.</li>
+<li>The <b>Application Manager</b> is triggered by a client application. It is in charge of orchestrating jobs during the runtime of the application and asks the <b>Resource Manager</b> for resources.</li>
+<li>The <b>Node Manager</b> is a daemon running on the worker nodes. It communicates with the <b>Resource Manager</b> at all time and with the <b>Application Manager</b> during the runtime of the application.</li>
+<li><b>Containers</b> are the daemons triggered by the <b>Resource Manager</b> at the start of an application. They are in charge of the actual work. In fact, containers are <a href="https://en.wikipedia.org/wiki/Java_virtual_machine">JVM</a> with allocated disk and memory.</li>
+</ul>
+
+<center>?????????????????????????????????????????????????????????????????????????????????????????????????????????</center>
+
+
+The code of an application contains information about the location of the files (in HDFS or locally), about the number of mappers and reducers and of course the code of Mappers, Combiners, Partitioners and Reducers. 
+
+When it is launched, the <b>Resource Manager</b> triggers an <b>Application Manager</b> on one of the worker nodes. The <b>Application Manager</b> knows the resource needed (number of mappers and reducers) and asks the <b>Resource Manager</b> for those resources. 
+
+The <b>Resource Manager</b> launches containers that includes a <b>JVM</b> and the code of the mappers and the reducers and communicates the address and ids of the containers to the <b>Application Manager</b>. 
+
+Then, those containers communicate to the <b>Application Manager</b> which is in charge of orchestrating the jobs. The communication goes through the <b>Resource Manager</b> because Hadoop is based on a share-nothing model, e.g. worker nodes are only linked to the master nodes not one to each other. This leaves the <b>Resource Manager</b> available for other applications to be run on other nodes. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,3 +5,5 @@ flask-bootstrap
 flask-socketio
 markdown2
 Markdown
+google-api-python-client
+google-api-support

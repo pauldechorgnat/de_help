@@ -129,11 +129,13 @@ In some companies where data is a very sensible issue, data is replicated inside
 <p>The pseudo-code for this step is the following:</p>
 
 <blockquote>
+<code>
 INPUT: data <i>(list of strings)</i><br><br>
 FOR EACH partition IN data:<br>
 &emsp;&emsp;token_list = TOKENIZATION(partition)<br>
 &emsp;&emsp;FOR EACH token IN token_list:<br>
 &emsp;&emsp;&emsp;&emsp;EMIT((token, 1))<br>
+</code>
 </blockquote>
 
 <p>Remember that the <b>Shuffle</b> phase forces all values corresponding to the same key to be on the same reducing machine. So on every machine used during the <b>Reduce</b> phase, we have a set of keys, corresponding to some tokens present in the text and for each key a list of ones of length corresponding to the number of instances of this token over the partitions. </p>
@@ -141,11 +143,13 @@ FOR EACH partition IN data:<br>
 <p>The pseudo-code for the <b>Reduce</b> is given in the following block: the code is given only for one key because during the <b>Reduce</b>, keys are treated totally independently.</p>
 
 <blockquote>
+<code>
 INPUT: key <i>(string)</i>, list_of_values <i>(list of integers)</i><br><br>
 s = 0<br>
 FOR EACH i IN list_of_values:<br>
 &emsp;&emsp;s = s + i<br>
 EMIT((key, s))
+</code>
 </blockquote>
 
 <div class="slider">
@@ -163,6 +167,7 @@ EMIT((key, s))
 <p>We can aggregate those values during the <b>Map</b> phase using a <b>Combiner</b>: this can be considered as a <b>Reduce</b> phase in the mapper. If we take the example of Wordcount, the new pseudo-code for the <b>Map</b> is the following: </p>
 
 <blockquote>
+<code>
 INPUT: data <i>(list of strings)</i><br><br>
 temp = DICTIONARY(string, integer)<br>
 FOR EACH partition IN data:<br>
@@ -175,6 +180,7 @@ FOR EACH partition IN data:<br>
 <br>
 FOR EACH token IN temp.keys:<br>
 &emsp;&emsp;EMIT((token, temp.get(token))
+</code>
 </blockquote>
 
 <div class="slider">
@@ -246,4 +252,118 @@ FOR EACH token IN temp.keys:<br>
 
 <p>The <b>Resource Manager</b> launches containers that includes a <b>JVM</b> and the code of the mappers and the reducers and communicates the address and ids of the containers to the <b>Application Manager</b>. </p>
 
-<p>Then, those containers communicate to the <b>Application Manager</b> which is in charge of orchestrating the jobs. The communication goes through the <b>Resource Manager</b> because Hadoop is based on a share-nothing model, e.g. worker nodes are only linked to the master nodes not one to each other. This leaves the <b>Resource Manager</b> available for other applications to be run on other nodes. </p>
+<p>Then, those containers communicate to the <b>Application Manager</b> which is in charge of orchestrating the jobs. The communication goes through the <b>Resource Manager</b> because <b>Hadoop</b> is based on a share-nothing model, e.g. worker nodes are only linked to the master nodes not one to each other. This leaves the <b>Resource Manager</b> available for other applications to be run on other nodes. </p>
+
+<h2>Installing Hadoop</h2>
+
+<p><i>In this part, we are going to install <b>Hadoop</b> in a pseudo-distributed mode. The components have already been downloaded but the setting must be done.</i></p>
+
+<h3>Installation modes</h3>
+
+<p>There are 3 available installation modes: </p>
+
+<ul>
+<li><b>Distributed mode</b>: This is the standard mode: the installation is spread over a cluster with worker nodes and slave nodes. </li>
+<li><b>Pseudo-distributed mode</b>: This mode is a demonstration mode: we simulate the functioning in a distributed mode on a single machine by routing the pseudo-nodes to different ports of the machine. </li>
+<li><b>Stand-alone mode</b>: This is also a demonstration mode where one machine is taken as a single node network and the local file system is used in place of the distributed one.</li>
+</ul>
+
+<h3>Installation</h3>
+
+<p>The installation files are located under the archive <code>/home/ubuntu/hadoop.tar.gz</code>. 
+<i>It has been downloaded for <a href="https://hadoop.apache.org/releases.html">Hadoop</a> website. </i></p>
+
+<p>First, we need to decompress the archive:</p>
+
+<blockquote>
+<code>
+tar xvf /home/ubuntu/hadoop.tar.gz
+</code>
+</blockquote>
+
+<p>To check that it indeed has been decompressed, you can use the command: </p>
+
+<blockquote>
+<code>
+ls -l | grep hadoop
+</code>
+</blockquote>
+
+<p>You should see both the archive and the folder with the same name (except the extension).</p>
+
+<p>Now we need to edit the <code>/home/ubuntu/.bashrc</code> file to give it paths to Hadoop files. </p>
+
+<p><i>We are going to use <code>nano</code> but you can use any text editor you want.</i></p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/.bashrc
+</code>
+</blockquote>
+
+<p>Append those lines to the file: </p>
+
+<blockquote>
+<code>
+# HADOOP PATHS<br>
+export JAVA_HOME=/usr<br>
+export PATH=$PATH:/usr/bin/java<br>
+export HADOOP_HOME=/home/hduser/hadoop<br>
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop<br>
+export HADOOP_MAPRED_HOME=$HADOOP_HOME<br>
+export HADOOP_COMMON_HOME=$HADOOP_HOME<br>
+export HADOOP_HDFS_HOME=$HADOOP_HOME<br>
+export YARN_HOME=$HADOOP_HOME<br>
+export PATH=$PATH:$HADOOP_HOME/bin<br>
+</code>
+</blockquote>
+
+<p>Close the file and commit those changes with the <code>source</code>: </p>
+
+<blockquote>
+<code>
+source /home/ubuntu/.bashrc
+</code>
+</blockquote>
+
+<p>We are going to check that <b>Java</b> and <b>Hadoop</b> are installed: </p>
+
+<blockquote>
+<code>
+java -version | grep openjdk
+hadoop version | grep Hadoop
+</code>
+</blockquote>
+
+<p>You should see the version of the two softwares. </p>
+
+<p>We are now going to shape the cluster. </p>
+
+<p>There are several files that need to be edited. </p>
+
+<h4>core-site.xml</h4>
+
+<p>This file contains settings for the <b>namenode</b>. The namenode address will be on local port 9000. </p>
+
+<p>Open the file: </p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml
+</code>
+</blockquote>
+
+<p>With the tags <code>&#x3008;configuration</code>, paste the following:</p>
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;fs.default.name &#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;hdfs://localhost:9000 &#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4>hdfs-site.xml</h4>
+
+<p>This file contains information about how HDFS functions. </p>

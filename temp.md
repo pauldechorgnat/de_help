@@ -81,11 +81,13 @@ During the <b>Map</b> phase, the partitions of the text are lowered, tokenized a
 The pseudo-code for this step is the following:
 
 <blockquote>
-INPUT: data <i>(list of strings)</i><br><br>
-FOR EACH partition IN data:<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
-&emsp;&emsp;FOR EACH token IN token_list:<br>
-&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))<br>
+<code>
+INPUT: data (list of strings)&#x3008;br&#x3009;<br>
+FOR EACH partition IN data:&#x3008;br&#x3009;<br>
+&emsp;&emsp;token_list = TOKENIZATION(partition)&#x3008;br&#x3009;<br>
+&emsp;&emsp;FOR EACH token IN token_list:&#x3008;br&#x3009;<br>
+&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))&#x3008;br&#x3009;<br>
+</code>
 </blockquote>
 
 Remember that the <b>Shuffle</b> phase forces all values corresponding to the same key to be on the same reducing machine. So on every machine used during the <b>Reduce</b> phase, we have a set of keys, corresponding to some tokens present in the text and for each key a list of ones of length corresponding to the number of instances of this token over the partitions. 
@@ -93,11 +95,13 @@ Remember that the <b>Shuffle</b> phase forces all values corresponding to the sa
 The pseudo-code for the <b>Reduce</b> is given in the following block: the code is given only for one key because during the <b>Reduce</b>, keys are treated totally independently.
 
 <blockquote>
-INPUT: key <i>(string)</i>, list_of_values <i>(list of integers)</i><br><br>
-s = 0<br>
-FOR EACH i IN list_of_values:<br>
-&emsp;&emsp;s = s + i<br>
-EMIT((key, s))
+<code>
+INPUT: key (string), list_of_values (list of integers)&#x3008;br&#x3009;<br>
+s = 0&#x3008;br&#x3009;<br>
+FOR EACH i IN list_of_values:&#x3008;br&#x3009;<br>
+&emsp;&emsp;s = s + i&#x3008;br&#x3009;<br>
+EMIT((key, s))&#x3008;br&#x3009;<br>
+</code>
 </blockquote>
   
 @slider mapreduce_wordcount_slider
@@ -111,18 +115,20 @@ You may have noticed that during the Map phase of Wordcount, we have emitted the
 We can aggregate those values during the <b>Map</b> phase using a <b>Combiner</b>: this can be considered as a <b>Reduce</b> phase in the mapper. If we take the example of Wordcount, the new pseudo-code for the <b>Map</b> is the following: 
 
 <blockquote>
-INPUT: data <i>(list of strings)</i><br><br>
-temp = DICTIONARY(string, integer)<br>
-FOR EACH partition IN data:<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
-&emsp;&emsp;FOR EACH token IN token_list:<br>
-&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))<br>
-&emsp;&emsp;&emsp;&emsp;ELSE:<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)<br>
-<br>
-FOR EACH token IN temp.keys:<br>
-&emsp;&emsp;EMIT((token, temp.get(token))
+<code>
+INPUT: data (list of strings)&#x3008;br&#x3009;<br>
+temp = DICTIONARY(string, integer)&#x3008;br&#x3009;<br>
+FOR EACH partition IN data:&#x3008;br&#x3009;<br>
+&emsp;&emsp;token_list = TOKENIZATION(partition)&#x3008;br&#x3009;<br>
+&emsp;&emsp;FOR EACH token IN token_list:&#x3008;br&#x3009;<br>
+&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:&#x3008;br&#x3009;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))&#x3008;br&#x3009;<br>
+&emsp;&emsp;&emsp;&emsp;ELSE:&#x3008;br&#x3009;<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)&#x3008;br&#x3009;<br>
+&#x3008;br&#x3009;<br>
+FOR EACH token IN temp.keys:&#x3008;br&#x3009;<br>
+&emsp;&emsp;EMIT((token, temp.get(token))&#x3008;br&#x3009;<br>
+</code>
 </blockquote>
 
 @slider wordcount_combiner_slider
@@ -184,19 +190,228 @@ When it is launched, the <b>Resource Manager</b> triggers an <b>Application Mana
 
 The <b>Resource Manager</b> launches containers that includes a <b>JVM</b> and the code of the mappers and the reducers and communicates the address and ids of the containers to the <b>Application Manager</b>. 
 
-Then, those containers communicate to the <b>Application Manager</b> which is in charge of orchestrating the jobs. The communication goes through the <b>Resource Manager</b> because Hadoop is based on a share-nothing model, e.g. worker nodes are only linked to the master nodes not one to each other. This leaves the <b>Resource Manager</b> available for other applications to be run on other nodes. 
+Then, those containers communicate to the <b>Application Manager</b> which is in charge of orchestrating the jobs. The communication goes through the <b>Resource Manager</b> because <b>Hadoop</b> is based on a share-nothing model, e.g. worker nodes are only linked to the master nodes not one to each other. This leaves the <b>Resource Manager</b> available for other applications to be run on other nodes. 
 
 
 
+<h2>Installing Hadoop</h2>
+
+<i>In this part, we are going to install <b>Hadoop</b> in a pseudo-distributed mode. The components have already been downloaded but the setting must be done.</i>
+
+<h3>Installation modes</h3>
+
+There are 3 available installation modes: 
+<ul>
+<li><b>Distributed mode</b>: This is the standard mode: the installation is spread over a cluster with worker nodes and slave nodes. </li>
+<li><b>Pseudo-distributed mode</b>: This mode is a demonstration mode: we simulate the functioning in a distributed mode on a single machine by routing the pseudo-nodes to different ports of the machine. </li>
+<li><b>Stand-alone mode</b>: This is also a demonstration mode where one machine is taken as a single node network and the local file system is used in place of the distributed one.</li>
+</ul>
+
+<h3>Installation</h3>
+
+The installation files are located under the archive <code>/home/ubuntu/hadoop.tar.gz</code>. 
+<i>It has been downloaded for <a href="https://hadoop.apache.org/releases.html">Hadoop</a> website. </i>
+
+First, we need to decompress the archive:
+<blockquote>
+<code>
+tar xvf /home/ubuntu/hadoop.tar.gz&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
+
+To check that it indeed has been decompressed, you can use the command: 
+<blockquote>
+<code>
+ls -l | grep hadoop&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
 
 
+You should see both the archive and the folder with the same name (except the extension).
 
 
+Now we need to edit the <code>/home/ubuntu/.bashrc</code> file to give it paths to Hadoop files. 
 
+<i>We are going to use <code>nano</code> but you can use any text editor you want.</i>
 
+<blockquote>
+<code>
+nano /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
 
+Append those lines to the file: 
 
+<blockquote>
+<code>
+# HADOOP PATHS&#x3008;br&#x3009;<br>
+export JAVA_HOME=/usr&#x3008;br&#x3009;<br>
+export PATH=$PATH:/usr/bin/java&#x3008;br&#x3009;<br>
+export HADOOP_HOME=/home/hduser/hadoop&#x3008;br&#x3009;<br>
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop&#x3008;br&#x3009;<br>
+export HADOOP_MAPRED_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
+export HADOOP_COMMON_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
+export HADOOP_HDFS_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
+export YARN_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
+export PATH=$PATH:$HADOOP_HOME/bin&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
 
+Close the file and commit those changes with the <code>source</code>: 
+
+<blockquote>
+<code>
+source /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
+
+We are going to check that <b>Java</b> and <b>Hadoop</b> are installed: 
+
+<blockquote>
+<code>
+java -version | grep openjdk&#x3008;br&#x3009;<br>
+hadoop version | grep Hadoop&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
+
+You should see the version of the two softwares. 
+
+We are now going to shape the cluster. 
+
+There are several files that need to be edited. 
+
+<h4><b>core-site.xml</b></h4>
+This file contains settings for the <b>namenode</b>. The namenode address will be on local port 9000. 
+
+Open the file: 
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
+
+Within the tags <code>&#x3008;configuration</code>, paste the following lines:
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;fs.default.name &#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;hdfs://localhost:9000 &#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>hdfs-site.xml</b></h4>
+This file contains information about how HDFS functions: we are going to choose a replication factor of 2, e.g. there will be 3 copies of each file. We will specify also a local directory to store namenode data and the datanode data. Finally, we need to tell him not to check for security clearance at each action. 
+
+Open the file:
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml&#x3008;br&#x3009;<br>
+</code>
+</blockquote>
+
+Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;dfs.replication&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;2&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;dfs.permission&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;false&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+    &#x3008;name&#x3009;dfs.name.dir&#x3008;/name&#x3009;<br>
+    &#x3008;value&#x3009;/home/ubuntu/data/namenode_data&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+    &#x3008;name&#x3009;dfs.data.dir&#x3008;/name&#x3009;<br>
+    &#x3008;value&#x3009;/home/ubuntu/data/datanode_data&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>mapred-site.xml</b></h4>
+
+In this file, we will simply state that the resource manager that will be used is YARN.
+
+First, we need to copy/paste the template of this configuration file: 
+
+<blockquote>
+<code>
+cp /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml.template /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
+</code>
+</blockquote>
+
+Open the file:
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
+</code>
+</blockquote>
+
+Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;mapreduce.framework.name&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;yarn&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>yarn-site.xml</b></h4>
+
+This files contains <b>YARN</b> settings. We simply tell him what <b>Java</b> classes should be used for the shuffle step: 
+
+Open the file:
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml<br>
+</code>
+</blockquote>
+
+Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;yarn.nodemanager.aux-services&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;mapreduce_shuffle&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;yarn.nodemanager.auxservices.mapreduce.shuffle.class&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;org.apache.hadoop.mapred.ShuffleHandler&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>hadoop-env.sh</b></h4>
+In this file, we will just specify where <b>Hadoop</b> can find <b>Java</b>.
+
+Open the file: 
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/hadoop-env.sh<br>
+</code>
+</blockquote>
+
+Append this line to the file:
+
+<blockquote>
+<code>
+export JAVA_HOME=/usr<br>
+</code>
+</blockquote>
 
 
 

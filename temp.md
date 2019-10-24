@@ -82,11 +82,11 @@ The pseudo-code for this step is the following:
 
 <blockquote>
 <code>
-INPUT: data (list of strings)&#x3008;br&#x3009;<br>
-FOR EACH partition IN data:&#x3008;br&#x3009;<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)&#x3008;br&#x3009;<br>
-&emsp;&emsp;FOR EACH token IN token_list:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))&#x3008;br&#x3009;<br>
+INPUT: data (list of strings)<br>
+FOR EACH partition IN data:<br>
+&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
+&emsp;&emsp;FOR EACH token IN token_list:<br>
+&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))<br>
 </code>
 </blockquote>
 
@@ -96,11 +96,11 @@ The pseudo-code for the <b>Reduce</b> is given in the following block: the code 
 
 <blockquote>
 <code>
-INPUT: key (string), list_of_values (list of integers)&#x3008;br&#x3009;<br>
-s = 0&#x3008;br&#x3009;<br>
-FOR EACH i IN list_of_values:&#x3008;br&#x3009;<br>
-&emsp;&emsp;s = s + i&#x3008;br&#x3009;<br>
-EMIT((key, s))&#x3008;br&#x3009;<br>
+INPUT: key (string), list_of_values (list of integers)<br>
+s = 0<br>
+FOR EACH i IN list_of_values:<br>
+&emsp;&emsp;s = s + i<br>
+EMIT((key, s))<br>
 </code>
 </blockquote>
   
@@ -116,18 +116,18 @@ We can aggregate those values during the <b>Map</b> phase using a <b>Combiner</b
 
 <blockquote>
 <code>
-INPUT: data (list of strings)&#x3008;br&#x3009;<br>
-temp = DICTIONARY(string, integer)&#x3008;br&#x3009;<br>
-FOR EACH partition IN data:&#x3008;br&#x3009;<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)&#x3008;br&#x3009;<br>
-&emsp;&emsp;FOR EACH token IN token_list:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;ELSE:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)&#x3008;br&#x3009;<br>
-&#x3008;br&#x3009;<br>
-FOR EACH token IN temp.keys:&#x3008;br&#x3009;<br>
-&emsp;&emsp;EMIT((token, temp.get(token))&#x3008;br&#x3009;<br>
+INPUT: data (list of strings)<br>
+temp = DICTIONARY(string, integer)<br>
+FOR EACH partition IN data:<br>
+&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
+&emsp;&emsp;FOR EACH token IN token_list:<br>
+&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))<br>
+&emsp;&emsp;&emsp;&emsp;ELSE:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)<br>
+<br>
+FOR EACH token IN temp.keys:<br>
+&emsp;&emsp;EMIT((token, temp.get(token))<br>
 </code>
 </blockquote>
 
@@ -215,14 +215,14 @@ The installation files are located under the archive <code>/home/ubuntu/hadoop.t
 First, we need to decompress the archive:
 <blockquote>
 <code>
-tar xvf /home/ubuntu/hadoop.tar.gz&#x3008;br&#x3009;<br>
+tar xvf /home/ubuntu/hadoop.tar.gz<br>
 </code>
 </blockquote>
 
 To check that it indeed has been decompressed, you can use the command: 
 <blockquote>
 <code>
-ls -l | grep hadoop&#x3008;br&#x3009;<br>
+ls -l | grep hadoop<br>
 </code>
 </blockquote>
 
@@ -236,7 +236,7 @@ Now we need to edit the <code>/home/ubuntu/.bashrc</code> file to give it paths 
 
 <blockquote>
 <code>
-nano /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
+nano /home/ubuntu/.bashrc<br>
 </code>
 </blockquote>
 
@@ -244,16 +244,16 @@ Append those lines to the file:
 
 <blockquote>
 <code>
-# HADOOP PATHS&#x3008;br&#x3009;<br>
-export JAVA_HOME=/usr&#x3008;br&#x3009;<br>
-export PATH=$PATH:/usr/bin/java&#x3008;br&#x3009;<br>
-export HADOOP_HOME=/home/hduser/hadoop&#x3008;br&#x3009;<br>
-export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop&#x3008;br&#x3009;<br>
-export HADOOP_MAPRED_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export HADOOP_COMMON_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export HADOOP_HDFS_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export YARN_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export PATH=$PATH:$HADOOP_HOME/bin&#x3008;br&#x3009;<br>
+# HADOOP PATHS<br>
+export JAVA_HOME=/usr<br>
+export PATH=$PATH:/usr/bin/java<br>
+export HADOOP_HOME=/home/hduser/hadoop<br>
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop<br>
+export HADOOP_MAPRED_HOME=$HADOOP_HOME<br>
+export HADOOP_COMMON_HOME=$HADOOP_HOME<br>
+export HADOOP_HDFS_HOME=$HADOOP_HOME<br>
+export YARN_HOME=$HADOOP_HOME<br>
+export PATH=$PATH:$HADOOP_HOME/bin<br>
 </code>
 </blockquote>
 
@@ -261,7 +261,7 @@ Close the file and commit those changes with the <code>source</code>:
 
 <blockquote>
 <code>
-source /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
+source /home/ubuntu/.bashrc<br>
 </code>
 </blockquote>
 
@@ -269,8 +269,8 @@ We are going to check that <b>Java</b> and <b>Hadoop</b> are installed:
 
 <blockquote>
 <code>
-java -version | grep openjdk&#x3008;br&#x3009;<br>
-hadoop version | grep Hadoop&#x3008;br&#x3009;<br>
+java -version | grep openjdk<br>
+hadoop version | grep Hadoop<br>
 </code>
 </blockquote>
 
@@ -287,7 +287,7 @@ Open the file:
 
 <blockquote>
 <code>
-nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml&#x3008;br&#x3009;<br>
+nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml<br>
 </code>
 </blockquote>
 
@@ -309,7 +309,7 @@ Open the file:
 
 <blockquote>
 <code>
-nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml&#x3008;br&#x3009;<br>
+nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml<br>
 </code>
 </blockquote>
 

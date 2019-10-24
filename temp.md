@@ -576,8 +576,20 @@ hdfs dfs -mv -r /path/to/folder /new/path/to/folder<br>
 
 We can also use regular expressions to address multiple files at the same time. 
 
+<h4>Exercise</h4>
 
-
+<i>In the folder </i><code>/home/ubuntu/books</code><i> there are </i><code>moby_dick.txt</code><i> and </i><code>alice.txt</code><i>. Try to do the following: 
+<ul>
+<li>create a folder </i><code>/data/books</code><i>.</li>
+<li>copy both books from local file system to this folder.</li>
+<li>copy the file </i><code>sherlock_holmes.txt</code><i> on </i><b>HDFS</b><i> to this new folder. </li>
+<li>print the content of those files.</li>
+<li>make a copy of the folder </i><code>/data/books_backup</code><i>.</li>
+<li>make a copy of </i><code>moby_dick.txt</code><i> named </i><code>moby_dick2.txt</code><i> in the same folder.</li>
+<li>delete those two files from this folder in one command using a regular expression.</li>
+<li>delete the folder </i><code>/data/books</code><i>.</li>
+</ul>
+</i>
 
 
 

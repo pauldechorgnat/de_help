@@ -130,7 +130,7 @@ In some companies where data is a very sensible issue, data is replicated inside
 
 <blockquote>
 <code>
-INPUT: data <i>(list of strings)</i><br><br>
+INPUT: data (list of strings)<br>
 FOR EACH partition IN data:<br>
 &emsp;&emsp;token_list = TOKENIZATION(partition)<br>
 &emsp;&emsp;FOR EACH token IN token_list:<br>
@@ -144,11 +144,11 @@ FOR EACH partition IN data:<br>
 
 <blockquote>
 <code>
-INPUT: key <i>(string)</i>, list_of_values <i>(list of integers)</i><br><br>
+INPUT: key (string), list_of_values (list of integers)<br>
 s = 0<br>
 FOR EACH i IN list_of_values:<br>
 &emsp;&emsp;s = s + i<br>
-EMIT((key, s))
+EMIT((key, s))<br>
 </code>
 </blockquote>
 
@@ -168,7 +168,7 @@ EMIT((key, s))
 
 <blockquote>
 <code>
-INPUT: data <i>(list of strings)</i><br><br>
+INPUT: data (list of strings)<br>
 temp = DICTIONARY(string, integer)<br>
 FOR EACH partition IN data:<br>
 &emsp;&emsp;token_list = TOKENIZATION(partition)<br>
@@ -179,7 +179,7 @@ FOR EACH partition IN data:<br>
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)<br>
 <br>
 FOR EACH token IN temp.keys:<br>
-&emsp;&emsp;EMIT((token, temp.get(token))
+&emsp;&emsp;EMIT((token, temp.get(token))<br>
 </code>
 </blockquote>
 
@@ -277,7 +277,7 @@ FOR EACH token IN temp.keys:<br>
 
 <blockquote>
 <code>
-tar xvf /home/ubuntu/hadoop.tar.gz
+tar xvf /home/ubuntu/hadoop.tar.gz<br>
 </code>
 </blockquote>
 
@@ -285,7 +285,7 @@ tar xvf /home/ubuntu/hadoop.tar.gz
 
 <blockquote>
 <code>
-ls -l | grep hadoop
+ls -l | grep hadoop<br>
 </code>
 </blockquote>
 
@@ -297,7 +297,7 @@ ls -l | grep hadoop
 
 <blockquote>
 <code>
-nano /home/ubuntu/.bashrc
+nano /home/ubuntu/.bashrc<br>
 </code>
 </blockquote>
 
@@ -322,7 +322,7 @@ export PATH=$PATH:$HADOOP_HOME/bin<br>
 
 <blockquote>
 <code>
-source /home/ubuntu/.bashrc
+source /home/ubuntu/.bashrc<br>
 </code>
 </blockquote>
 
@@ -330,8 +330,8 @@ source /home/ubuntu/.bashrc
 
 <blockquote>
 <code>
-java -version | grep openjdk
-hadoop version | grep Hadoop
+java -version | grep openjdk<br>
+hadoop version | grep Hadoop<br>
 </code>
 </blockquote>
 
@@ -341,7 +341,7 @@ hadoop version | grep Hadoop
 
 <p>There are several files that need to be edited. </p>
 
-<h4>core-site.xml</h4>
+<h4><b>core-site.xml</b></h4>
 
 <p>This file contains settings for the <b>namenode</b>. The namenode address will be on local port 9000. </p>
 
@@ -349,11 +349,11 @@ hadoop version | grep Hadoop
 
 <blockquote>
 <code>
-nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml
+nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml<br>
 </code>
 </blockquote>
 
-<p>With the tags <code>&#x3008;configuration</code>, paste the following:</p>
+<p>Within the tags <code>&#x3008;configuration</code>, paste the following lines:</p>
 
 <blockquote>
 <code>
@@ -364,6 +364,117 @@ nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml
 </code>
 </blockquote>
 
-<h4>hdfs-site.xml</h4>
+<h4><b>hdfs-site.xml</b></h4>
 
-<p>This file contains information about how HDFS functions. </p>
+<p>This file contains information about how HDFS functions: we are going to choose a replication factor of 2, e.g. there will be 3 copies of each file. We will specify also a local directory to store namenode data and the datanode data. Finally, we need to tell him not to check for security clearance at each action. </p>
+
+<p>Open the file:</p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml<br>
+</code>
+</blockquote>
+
+<p>Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:</p>
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;dfs.replication&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;2&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;dfs.permission&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;false&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+    &#x3008;name&#x3009;dfs.name.dir&#x3008;/name&#x3009;<br>
+    &#x3008;value&#x3009;/home/ubuntu/data/namenode_data&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+    &#x3008;name&#x3009;dfs.data.dir&#x3008;/name&#x3009;<br>
+    &#x3008;value&#x3009;/home/ubuntu/data/datanode_data&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>mapred-site.xml</b></h4>
+
+<p>In this file, we will simply state that the resource manager that will be used is YARN.</p>
+
+<p>First, we need to copy/paste the template of this configuration file: </p>
+
+<blockquote>
+<code>
+cp /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml.template /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
+</code>
+</blockquote>
+
+<p>Open the file:</p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
+</code>
+</blockquote>
+
+<p>Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:</p>
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;mapreduce.framework.name&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;yarn&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>yarn-site.xml</b></h4>
+
+<p>This files contains <b>YARN</b> settings. We simply tell him what <b>Java</b> classes should be used for the shuffle step: </p>
+
+<p>Open the file:</p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml<br>
+</code>
+</blockquote>
+
+<p>Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:</p>
+
+<blockquote>
+<code>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;yarn.nodemanager.aux-services&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;mapreduce_shuffle&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+&#x3008;property&#x3009;<br>
+&#x3008;name&#x3009;yarn.nodemanager.auxservices.mapreduce.shuffle.class&#x3008;/name&#x3009;<br>
+&#x3008;value&#x3009;org.apache.hadoop.mapred.ShuffleHandler&#x3008;/value&#x3009;<br>
+&#x3008;/property&#x3009;<br>
+</code>
+</blockquote>
+
+<h4><b>hadoop-env.sh</b></h4>
+
+<p>In this file, we will just specify where <b>Hadoop</b> can find <b>Java</b>.</p>
+
+<p>Open the file: </p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/hadoop/etc/hadoop/hadoop-env.sh<br>
+</code>
+</blockquote>
+
+<p>Append this line to the file:</p>
+
+<blockquote>
+<code>
+export JAVA_HOME=/usr<br>
+</code>
+</blockquote>
+
+<h3>Initialization</h3>

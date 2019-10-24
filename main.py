@@ -65,7 +65,7 @@ def index():
         text = form.pagedown.data
 
         text = format_text(text)
-
+        text = text.replace('&#x3008;br&#x3009;', '')
         #saving markdown content
         with open('temp.md', 'w') as file:
             file.write(text)
@@ -86,9 +86,11 @@ def index():
 
                 html_from_md = html_from_md.replace(markdown(s), slider_temp)
 
+
         with open('temp.html', 'w') as file:
             file.write(html_from_md)
     with open('temp.md', 'r') as file:
+
         text = file.read()
     form.pagedown.data = text
     return render_template('index.html', form=form, text=text)

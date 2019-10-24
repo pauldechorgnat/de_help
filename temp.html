@@ -108,11 +108,11 @@ In some companies where data is a very sensible issue, data is replicated inside
 
 <blockquote>
 <code>
-INPUT: data (list of strings)&#x3008;br&#x3009;<br>
-FOR EACH partition IN data:&#x3008;br&#x3009;<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)&#x3008;br&#x3009;<br>
-&emsp;&emsp;FOR EACH token IN token_list:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))&#x3008;br&#x3009;<br>
+INPUT: data (list of strings)<br>
+FOR EACH partition IN data:<br>
+&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
+&emsp;&emsp;FOR EACH token IN token_list:<br>
+&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))<br>
 </code>
 </blockquote>
 
@@ -122,11 +122,11 @@ FOR EACH partition IN data:&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-INPUT: key (string), list_of_values (list of integers)&#x3008;br&#x3009;<br>
-s = 0&#x3008;br&#x3009;<br>
-FOR EACH i IN list_of_values:&#x3008;br&#x3009;<br>
-&emsp;&emsp;s = s + i&#x3008;br&#x3009;<br>
-EMIT((key, s))&#x3008;br&#x3009;<br>
+INPUT: key (string), list_of_values (list of integers)<br>
+s = 0<br>
+FOR EACH i IN list_of_values:<br>
+&emsp;&emsp;s = s + i<br>
+EMIT((key, s))<br>
 </code>
 </blockquote>
 
@@ -146,18 +146,18 @@ EMIT((key, s))&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-INPUT: data (list of strings)&#x3008;br&#x3009;<br>
-temp = DICTIONARY(string, integer)&#x3008;br&#x3009;<br>
-FOR EACH partition IN data:&#x3008;br&#x3009;<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)&#x3008;br&#x3009;<br>
-&emsp;&emsp;FOR EACH token IN token_list:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;ELSE:&#x3008;br&#x3009;<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)&#x3008;br&#x3009;<br>
-&#x3008;br&#x3009;<br>
-FOR EACH token IN temp.keys:&#x3008;br&#x3009;<br>
-&emsp;&emsp;EMIT((token, temp.get(token))&#x3008;br&#x3009;<br>
+INPUT: data (list of strings)<br>
+temp = DICTIONARY(string, integer)<br>
+FOR EACH partition IN data:<br>
+&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
+&emsp;&emsp;FOR EACH token IN token_list:<br>
+&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))<br>
+&emsp;&emsp;&emsp;&emsp;ELSE:<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)<br>
+<br>
+FOR EACH token IN temp.keys:<br>
+&emsp;&emsp;EMIT((token, temp.get(token))<br>
 </code>
 </blockquote>
 
@@ -255,7 +255,7 @@ FOR EACH token IN temp.keys:&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-tar xvf /home/ubuntu/hadoop.tar.gz&#x3008;br&#x3009;<br>
+tar xvf /home/ubuntu/hadoop.tar.gz<br>
 </code>
 </blockquote>
 
@@ -263,7 +263,7 @@ tar xvf /home/ubuntu/hadoop.tar.gz&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-ls -l | grep hadoop&#x3008;br&#x3009;<br>
+ls -l | grep hadoop<br>
 </code>
 </blockquote>
 
@@ -275,7 +275,7 @@ ls -l | grep hadoop&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-nano /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
+nano /home/ubuntu/.bashrc<br>
 </code>
 </blockquote>
 
@@ -283,16 +283,16 @@ nano /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-# HADOOP PATHS&#x3008;br&#x3009;<br>
-export JAVA_HOME=/usr&#x3008;br&#x3009;<br>
-export PATH=$PATH:/usr/bin/java&#x3008;br&#x3009;<br>
-export HADOOP_HOME=/home/hduser/hadoop&#x3008;br&#x3009;<br>
-export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop&#x3008;br&#x3009;<br>
-export HADOOP_MAPRED_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export HADOOP_COMMON_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export HADOOP_HDFS_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export YARN_HOME=$HADOOP_HOME&#x3008;br&#x3009;<br>
-export PATH=$PATH:$HADOOP_HOME/bin&#x3008;br&#x3009;<br>
+# HADOOP PATHS<br>
+export JAVA_HOME=/usr<br>
+export PATH=$PATH:/usr/bin/java<br>
+export HADOOP_HOME=/home/hduser/hadoop<br>
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop<br>
+export HADOOP_MAPRED_HOME=$HADOOP_HOME<br>
+export HADOOP_COMMON_HOME=$HADOOP_HOME<br>
+export HADOOP_HDFS_HOME=$HADOOP_HOME<br>
+export YARN_HOME=$HADOOP_HOME<br>
+export PATH=$PATH:$HADOOP_HOME/bin<br>
 </code>
 </blockquote>
 
@@ -300,7 +300,7 @@ export PATH=$PATH:$HADOOP_HOME/bin&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-source /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
+source /home/ubuntu/.bashrc<br>
 </code>
 </blockquote>
 
@@ -308,8 +308,8 @@ source /home/ubuntu/.bashrc&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-java -version | grep openjdk&#x3008;br&#x3009;<br>
-hadoop version | grep Hadoop&#x3008;br&#x3009;<br>
+java -version | grep openjdk<br>
+hadoop version | grep Hadoop<br>
 </code>
 </blockquote>
 
@@ -327,7 +327,7 @@ hadoop version | grep Hadoop&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml&#x3008;br&#x3009;<br>
+nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml<br>
 </code>
 </blockquote>
 
@@ -350,7 +350,7 @@ nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml&#x3008;br&#x3009;<br>
 
 <blockquote>
 <code>
-nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml&#x3008;br&#x3009;<br>
+nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml<br>
 </code>
 </blockquote>
 

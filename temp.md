@@ -716,4 +716,8 @@ You shall do the following:
 <li>import this file from </i><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</li>
 </ul>
 
+<h2>Conclusion</h2>
 
+In this lesson, we have seen the importance of distributed systems and the advantages it presents compared to classical architectures. We have also seen how to code in a framework like <b>MapReduce</b> and how to use specifically <b>Hadoop</b>. 
+
+The whole <b>Hadoop</b> framework is interesting as it is one of the main cornerstone of many tools: we shall see some of them in the following lessons: Hive, Pig, Spark, HBase, ...

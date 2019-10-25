@@ -331,14 +331,14 @@ nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml<br>
 </code>
 </blockquote>
 
-<p>Within the tags <code>&#x3008;configuration</code>, paste the following lines:</p>
+<p>Within the tags <code>&lt;configuration</code>, paste the following lines:</p>
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;fs.default.name &#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;hdfs://localhost:9000 &#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&lt;property&gt;<br>
+&lt;name&gt;fs.default.name &lt;/name&gt;<br>
+&lt;value&gt;hdfs://localhost:9000 &lt;/value&gt;<br>
+&lt;/property&gt;<br>
 </code>
 </blockquote>
 
@@ -354,26 +354,26 @@ nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml<br>
 </code>
 </blockquote>
 
-<p>Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:</p>
+<p>Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:</p>
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;dfs.replication&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;2&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;dfs.permission&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;false&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-    &#x3008;name&#x3009;dfs.name.dir&#x3008;/name&#x3009;<br>
-    &#x3008;value&#x3009;/home/ubuntu/data/namenode_data&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-    &#x3008;name&#x3009;dfs.data.dir&#x3008;/name&#x3009;<br>
-    &#x3008;value&#x3009;/home/ubuntu/data/datanode_data&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&lt;property&gt;<br>
+&lt;name&gt;dfs.replication&lt;/name&gt;<br>
+&lt;value&gt;2&lt;/value&gt;<br>
+&lt;/property&gt;<br>
+&lt;property&gt;<br>
+&lt;name&gt;dfs.permission&lt;/name&gt;<br>
+&lt;value&gt;false&lt;/value&gt;<br>
+&lt;/property&gt;<br>
+&lt;property&gt;<br>
+    &lt;name&gt;dfs.name.dir&lt;/name&gt;<br>
+    &lt;value&gt;/home/ubuntu/data/namenode_data&lt;/value&gt;<br>
+&lt;/property&gt;<br>
+&lt;property&gt;<br>
+    &lt;name&gt;dfs.data.dir&lt;/name&gt;<br>
+    &lt;value&gt;/home/ubuntu/data/datanode_data&lt;/value&gt;<br>
+&lt;/property&gt;<br>
 </code>
 </blockquote>
 
@@ -397,14 +397,14 @@ nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
 </code>
 </blockquote>
 
-<p>Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:</p>
+<p>Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:</p>
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;mapreduce.framework.name&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;yarn&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&lt;property&gt;<br>
+&lt;name&gt;mapreduce.framework.name&lt;/name&gt;<br>
+&lt;value&gt;yarn&lt;/value&gt;<br>
+&lt;/property&gt;<br>
 </code>
 </blockquote>
 
@@ -420,18 +420,18 @@ nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml<br>
 </code>
 </blockquote>
 
-<p>Within the tags <code>&#x3008;configuration&#x3009;</code>, paste the following lines:</p>
+<p>Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:</p>
 
 <blockquote>
 <code>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;yarn.nodemanager.aux-services&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;mapreduce_shuffle&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
-&#x3008;property&#x3009;<br>
-&#x3008;name&#x3009;yarn.nodemanager.auxservices.mapreduce.shuffle.class&#x3008;/name&#x3009;<br>
-&#x3008;value&#x3009;org.apache.hadoop.mapred.ShuffleHandler&#x3008;/value&#x3009;<br>
-&#x3008;/property&#x3009;<br>
+&lt;property&gt;<br>
+&lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;<br>
+&lt;value&gt;mapreduce_shuffle&lt;/value&gt;<br>
+&lt;/property&gt;<br>
+&lt;property&gt;<br>
+&lt;name&gt;yarn.nodemanager.auxservices.mapreduce.shuffle.class&lt;/name&gt;<br>
+&lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;/value&gt;<br>
+&lt;/property&gt;<br>
 </code>
 </blockquote>
 
@@ -573,7 +573,7 @@ hdfs dfs -copyFromLocal /home/ubuntu/sherlock_holmes.txt /data/<br>
 
 <blockquote>
 <code>
-hdfs dfs -put &#x3008;local_file_path&#x3009; &#x3008;distributed_path&#x3009;<br>
+hdfs dfs -put &lt;local_file_path&gt; &lt;distributed_path&gt;<br>
 </code>
 </blockquote>
 
@@ -599,7 +599,7 @@ hdfs dfs -cat /data/sherlock_holmes.txt<br>
 
 <blockquote>
 <code>
-hdfs dfs -get &#x3008;distributed_path&#x3009; &#x3008;local_path&#x3009;<br>
+hdfs dfs -get &lt;distributed_path&gt; &lt;local_path&gt;<br>
 </code>
 </blockquote>
 
@@ -631,6 +631,11 @@ hdfs dfs -mv -r /path/to/folder /new/path/to/folder<br>
 
 <p>We can also use regular expressions to address multiple files at the same time. </p>
 
+<h4>User Interface</h4>
+
+<p>HDFS has also a way to visualize the file system information: if you open a window on the 50070 port, you should be able to see the UI. 
+For example, you can see your files in <code>Utilities>Browse the file system </code>.</p>
+
 <h4>Exercise</h4>
 
 <p><i>In the folder </i><code>/home/ubuntu/books</code><i> there are </i><code>moby_dick.txt</code><i> and </i><code>alice.txt</code><i>. Try to do the following: </p>
@@ -648,4 +653,112 @@ hdfs dfs -mv -r /path/to/folder /new/path/to/folder<br>
 
 <p></i></p>
 
-<p>&lsaquo;</p>
+<h2>MapReduce practice</h2>
+
+<p>We are going to execute a <b>MapReduce</b> job performing wordcount. </p>
+
+<h3>Hadoop MapReduce</h3>
+
+<p>In this first part, we will perform a <b>WordCount</b> on <code>sherlock_holmes.txt</code> using the <b>Hadoop MapReduce Java</b> library. The application is already coded and compiled in the file <code>wordcount.jar</code> but it is available <a href="lien-vers-wordcount.java">here</a>. Feel free to read this file to get the pattern on <b>MapReduce</b> job implementation. You'll note that we did not specify a number of mappers and reducers, so there will be only one of each by default. </p>
+
+<p>To run this file, the syntax is the following: </p>
+
+<blockquote>
+<code>
+hadoop jar /home/ubuntu/code/wordcount.jar WordCount /data/sherlock_holmes.txt /output_wordcount<br>
+</code>
+</blockquote>
+
+<p>More generally, to perform a <b>MapReduce</b>, we can do the following:</p>
+
+<blockquote>
+<code>
+hadoop jar /path/to/jar/file ClassName ...<br>
+</code>
+</blockquote>
+
+<p>Here the two arguments are the input file and an output folder. Note that this folder should not exist before running this code. 
+Once run, you can see that Hadoop is very wordy: there are a lot of information and it is sometimes difficult to read through it. </p>
+
+<p>Now we can check the result of our job: </p>
+
+<blockquote>
+<code>
+hdfs dfs -ls -R /output_wordcount<br>
+</code>
+</blockquote>
+
+<p>As you can see a file named <code>part-r-00000</code> has been created. It contains the result of the Job. </p>
+
+<blockquote>
+<code>
+hdfs dfs -cat /output_wordcount/part-r-00000<br>
+</code>
+</blockquote>
+
+<p>This name corresponds to the fact that we have the output of a single reducer. If we had multiple reducers, we would have different files corresponding to the different partitions of our results with names incremented by 1 for each reducer. </p>
+
+<h3>Hadoop Streaming with Python</h3>
+
+<p>As stated before, <b>Hadoop Streaming</b> allows us to perform <b>MapReduce</b> jobs using other languages than <b>Java</b>. </p>
+
+<p>In this part we are going to run a <b>MapReduce</b> job using <b>Python</b>.
+In the folder <code>/home/ubuntu/code</code>, you can find <code>mapper.py</code> and <code>reducer.py</code>. Feel free to read their content: we are basically doing the same thing as before but with <b>Python</b> we are only printing out results in the standard output. Note also that we need to specify which command is used at the beginning of the file. </p>
+
+<p>Before running the command, we are just going to alias the command: this will ease the command. </p>
+
+<p>Open <code>.bashrc</code>:</p>
+
+<blockquote>
+<code>
+nano /home/ubuntu/.bashrc<br>
+</code>
+</blockquote>
+
+<p>Append the following lines to the file: </p>
+
+<blockquote>
+<code>
+alias hadoop_streaming="hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar"<br>
+</code>
+</blockquote>
+
+<p>You can run the job by doing the following command: </p>
+
+<blockquote>
+<code>
+hadoop_streaming \<br>
+-file ~/code/mapper.py \<br>
+-mapper ~/code/mapper.py \<br>
+-file ~/code/reducer.py \<br>
+-reducer ~/code/reducer.py \<br>
+-input /data/sherlock_holmes.txt \<br>
+-output /output_wordcount_streaming<br>
+</code>
+</blockquote>
+
+<p>We have to specify the code files twice because they are not hosted on the distributed file system. Moreover the output argument is still a non-existing folder in <b>HDFS</b>.</p>
+
+<p>You can check the results: </p>
+
+<blockquote>
+<code>
+hdfs dfs -ls -R /output_wordcount_streaming<br>
+hdfs dfs -cat /output_wordcount_streaming/part-00000<br>
+</code>
+</blockquote>
+
+<p>The code is a bit simpler than before so the results are a bit rougher. Yet we get the same idea. </p>
+
+<h4>Exercise</h4>
+
+<p><i>In this part, we will use the file </i><code>sentiment.csv</code><i> in the folder </i><code>/home/ubuntu/datasets</code><i>. This file contains two columns: the first represents the text of tweets while the second represents the sentiment (0 is for negative, 1 for positive). </p>
+
+<p>You shall do the following: </p>
+
+<ul>
+<li>put the file </i><code>sentiment.csv</code><i> into </i><b>HDFS</b><i>.</li>
+<li>create a mapper and a reducer scripts in </i><b>Python</b><i> that will count the number of positive and negative tweets.</li>
+<li>run this job and get its output into a folder </i><code>/output_count</code><i>.</li>
+<li>import this file from </i><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</li>
+</ul>

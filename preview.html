@@ -18,7 +18,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
   });
 });
 </script>
-<script>hljs.initHighlightingOnLoad();</script>
+<script>
+    evt = document.createEvent("HTMLEvents");
+    evt.initEvent('DOMContentLoaded');
+    document.dispatchEvent(evt);
+</script>
 
 <style>
     body {

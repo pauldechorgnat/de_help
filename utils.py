@@ -26,6 +26,10 @@ def format_text2(text):
         new_text = create_new_text(raw_text)
         # print(code.string)
         code.string = new_text
+        # adding the reactions:
+
+        code.attrs['onclick'] = 'copyText(this);'
+        code.attrs['style'] = 'cursor:pointer;'
 
     return str(soup).replace('&amp;', '&').replace('&lt;br&gt;', '<br>')
 

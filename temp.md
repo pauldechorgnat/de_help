@@ -81,7 +81,7 @@ During the <b>Map</b> phase, the partitions of the text are lowered, tokenized a
 The pseudo-code for this step is the following:
 
 <blockquote>
-<code class="plaintext">INPUT: data (list of strings)<br>
+<code class="plaintext" onclick="copyText(this);" style="cursor:pointer;">INPUT: data (list of strings)<br>
 FOR EACH partition IN data:<br>
   token_list = TOKENIZATION(partition)<br>
   FOR EACH token IN token_list:<br>
@@ -93,7 +93,7 @@ Remember that the <b>Shuffle</b> phase forces all values corresponding to the sa
 The pseudo-code for the <b>Reduce</b> is given in the following block: the code is given only for one key because during the <b>Reduce</b>, keys are treated totally independently.
 
 <blockquote>
-<code class="plaintext">INPUT: key (string), list_of_values (list of integers)<br>
+<code class="plaintext" onclick="copyText(this);" style="cursor:pointer;">INPUT: key (string), list_of_values (list of integers)<br>
 s = 0<br>
 FOR EACH i IN list_of_values:<br>
   s = s + i<br>
@@ -111,7 +111,7 @@ You may have noticed that during the Map phase of Wordcount, we have emitted the
 We can aggregate those values during the <b>Map</b> phase using a <b>Combiner</b>: this can be considered as a <b>Reduce</b> phase in the mapper. If we take the example of Wordcount, the new pseudo-code for the <b>Map</b> is the following: 
 
 <blockquote>
-<code class="plaintext">INPUT: data (list of strings)<br>
+<code class="plaintext" onclick="copyText(this);" style="cursor:pointer;">INPUT: data (list of strings)<br>
 temp = DICTIONARY(string, integer)<br>
 FOR EACH partition IN data:<br>
   token_list = TOKENIZATION(partition)<br>
@@ -136,7 +136,7 @@ This ensures an even distribution of keys over reducer nodes: each machine shoul
  
 @slider mapreduce_partitioners_slider
 
-<i>In this example, the key <code>key1</code> is over-represented. <br>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</br></i>
+<i>In this example, the key <code>key1</code> is over-represented. <br/>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</i>
 
 Partitioners cannot be coded dynamically: you have to know a priori the balance of values by key to implement one that will balance evenly the workload.
 
@@ -201,12 +201,12 @@ The installation files are located under the archive <code>/home/ubuntu/hadoop.t
 
 First, we need to decompress the archive:
 <blockquote>
-<code class="bash">tar xvf /home/ubuntu/hadoop.tar.gz</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">tar xvf /home/ubuntu/hadoop.tar.gz</code>
 </blockquote>
 
 To check that it indeed has been decompressed, you can use the command: 
 <blockquote>
-<code class="bash">ls -l | grep hadoop</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">ls -l | grep hadoop</code>
 </blockquote>
 
 
@@ -217,13 +217,13 @@ Now we need to edit the <code>/home/ubuntu/.bashrc</code> file to give it paths 
 
 <i>We are going to use <code>nano</code> but you can use any text editor you want.</i>
 <blockquote>
-<code class="bash">nano /home/ubuntu/.bashrc</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/.bashrc</code>
 </blockquote>
 
 Append those lines to the file: 
 
 <blockquote>
-<code class="bash"># HADOOP PATHS<br>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;"># HADOOP PATHS<br>
 export JAVA_HOME=/usr<br>
 export PATH=$PATH:/usr/bin/java<br>
 export HADOOP_HOME=/home/hduser/hadoop<br>
@@ -238,13 +238,13 @@ export PATH=$PATH:$HADOOP_HOME/bin</code>
 Close the file and commit those changes with the <code>source</code>: 
 
 <blockquote>
-<code class="bash">source /home/ubuntu/.bashrc</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">source /home/ubuntu/.bashrc</code>
 </blockquote>
 
 We are going to check that <b>Java</b> and <b>Hadoop</b> are installed: 
 
 <blockquote>
-<code class="bash">java -version | grep openjdk<br>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">java -version | grep openjdk<br>
 hadoop version | grep Hadoop</code>
 </blockquote>
 
@@ -260,13 +260,13 @@ This file contains settings for the <b>namenode</b>. The namenode address will b
 Open the file: 
 
 <blockquote>
-<code class="bash">nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration</code>, paste the following lines:
 
 <blockquote>
-<code class="html">&lt;property&gt;<br>
+<code class="html" onclick="copyText(this);" style="cursor:pointer;">&lt;property&gt;<br>
 &lt;name&gt;fs.default.name &lt;/name&gt;<br>
 &lt;value&gt;hdfs://localhost:9000 &lt;/value&gt;<br>
 &lt;/property&gt;</code>
@@ -277,13 +277,13 @@ This file contains information about how HDFS functions: we are going to choose 
 Open the file:
 
 <blockquote>
-<code class="bash">nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 
 <blockquote>
-<code class="html">&lt;property&gt;<br>
+<code class="html" onclick="copyText(this);" style="cursor:pointer;">&lt;property&gt;<br>
 &lt;name&gt;dfs.replication&lt;/name&gt;<br>
 &lt;value&gt;2&lt;/value&gt;<br>
 &lt;/property&gt;<br>
@@ -307,19 +307,19 @@ In this file, we will simply state that the resource manager that will be used i
 First, we need to copy/paste the template of this configuration file: 
 
 <blockquote>
-<code class="bash">cp /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml.template /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">cp /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml.template /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml</code>
 </blockquote>
 
 Open the file:
 
 <blockquote>
-<code class="bash">nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 
 <blockquote>
-<code class="html">&lt;property&gt;<br>
+<code class="html" onclick="copyText(this);" style="cursor:pointer;">&lt;property&gt;<br>
 &lt;name&gt;mapreduce.framework.name&lt;/name&gt;<br>
 &lt;value&gt;yarn&lt;/value&gt;<br>
 &lt;/property&gt;</code>
@@ -331,13 +331,13 @@ This files contains <b>YARN</b> settings. We simply tell him what <b>Java</b> cl
 Open the file:
 
 <blockquote>
-<code class="bash">nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 
 <blockquote>
-<code class="html">&lt;property&gt;<br>
+<code class="html" onclick="copyText(this);" style="cursor:pointer;">&lt;property&gt;<br>
 &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;<br>
 &lt;value&gt;mapreduce_shuffle&lt;/value&gt;<br>
 &lt;/property&gt;<br>
@@ -352,32 +352,32 @@ In this file, we will just specify where <b>Hadoop</b> can find <b>Java</b>.
 Open the file: 
 
 <blockquote>
-<code class="bash">nano /home/ubuntu/hadoop/etc/hadoop/hadoop-env.sh</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/hadoop/etc/hadoop/hadoop-env.sh</code>
 </blockquote>
 
 Append this line to the file:
 
 <blockquote>
-<code class="bash">export JAVA_HOME=/usr</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">export JAVA_HOME=/usr</code>
 </blockquote>
 <h3>Initialization</h3>
 
 First we need to format the namenode: 
 
 <blockquote>
-<code class="bash">hdfs namenode -format </code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs namenode -format </code>
 </blockquote>
 
 You can check that the folders containing the created by using the following command:
 
 <blockquote>
-<code class="bash">ls -l /home/ubuntu/ | grep _data</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">ls -l /home/ubuntu/ | grep _data</code>
 </blockquote>
 
 Now we need to start the daemons for <b>HDFS</b>: 
 
 <blockquote>
-<code class="bash">/home/ubuntu/hadoop/sbin/start-dfs.sh</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">/home/ubuntu/hadoop/sbin/start-dfs.sh</code>
 </blockquote>
 
 You can see which <b>Java</b> processes are running at anytime by using the command <code>jps</code>.
@@ -392,7 +392,7 @@ If you run this command here, you should see:
 Now we can start <b>YARN</b> daemons:
 
 <blockquote>
-<code class="bash">/home/ubuntu/hadoop/sbin/start-yarn.sh</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">/home/ubuntu/hadoop/sbin/start-yarn.sh</code>
 </blockquote>
 
 If you run <code>jps</code>, you should see: 
@@ -405,7 +405,7 @@ If you run <code>jps</code>, you should see:
 For this part, we have downloaded a book from <a href="https://www.gutenberg.org/">Project Gutenberg</a> library: The Adventures of Sherlock Holmes. It is a simple text file available on your local file system at <code>/home/ubuntu/sherlock_holmes.txt</code>. You can check the headers of the book with the following command: 
 
 <blockquote>
-<code class="bash">head -n 20 /home/ubuntu/sherlock_holmes.txt</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">head -n 20 /home/ubuntu/sherlock_holmes.txt</code>
 </blockquote>
 
 Most of the commands that we are going to use are based on the same pattern: <code>hdfs dfs -...</code> and we simply to write those commands into the shell. 
@@ -413,18 +413,18 @@ Most of the commands that we are going to use are based on the same pattern: <co
 First, let's create a folder named <code>data</code> in our distributed file system: 
 
 <blockquote>
-<code class="bash">hdfs dfs -mkdir /data</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -mkdir /data</code>
 </blockquote>
 
 You can check that the folder has indeed been created in the distributed file system and not in the local one by checking both systems at the root: 
 
 <b>Local file system</b>
 <blockquote>
-<code class="bash">ls / | grep data</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">ls / | grep data</code>
 </blockquote>
 <b>HDFS</b>
 <blockquote>
-<code class="bash">hdfs dfs -ls / | grep data</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -ls / | grep data</code>
 </blockquote>
 <code class="bash">hdfs dfs -ls</code> is used in the same way <code>ls</code> is used in a usual shell. HDFS is organised as any UNIX file sytem, starting from the root <code>/</code>. 
 
@@ -437,19 +437,19 @@ Notice that we always need to specify the absolute path as there are no current 
 We are now about to put our book into <b>HDFS</b>: 
 
 <blockquote>
-<code class="bash">hdfs dfs -put /home/ubuntu/sherlock_holmes.txt /data/</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -put /home/ubuntu/sherlock_holmes.txt /data/</code>
 </blockquote>
 
 We can also use <code>-copyFromLocal</code>
 <blockquote>
-<code class="bash">hdfs dfs -copyFromLocal /home/ubuntu/sherlock_holmes.txt /data/</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -copyFromLocal /home/ubuntu/sherlock_holmes.txt /data/</code>
 </blockquote>
 
 The main difference between those two commands is that <code>-put</code> can handle multiple files at once while <code>-copyFromLocal</code> cannot. 
 
 The syntax is: 
 <blockquote>
-<code class="bash">hdfs dfs -put &lt;local_file_path&gt; &lt;distributed_path&gt;</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -put &lt;local_file_path&gt; &lt;distributed_path&gt;</code>
 </blockquote>
 
 This command is very similar to <code>cp</code> or <code>scp</code>.
@@ -457,18 +457,18 @@ This command is very similar to <code>cp</code> or <code>scp</code>.
 We can check that the file is indeed here: 
 
 <blockquote>
-<code class="bash">hdfs dfs -ls -R /</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -ls -R /</code>
 </blockquote>
 
 Or print its content using <code>-cat</code>: 
 
 <blockquote>
-<code class="bash">hdfs dfs -cat /data/sherlock_holmes.txt</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -cat /data/sherlock_holmes.txt</code>
 </blockquote>
 
 The contrary can be done using <code>-get</code>: 
 <blockquote>
-<code class="bash">hdfs dfs -get &lt;distributed_path&gt; &lt;local_path&gt;</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -get &lt;distributed_path&gt; &lt;local_path&gt;</code>
 </blockquote>
  
 
@@ -476,7 +476,7 @@ The contrary can be done using <code>-get</code>:
 Of course we can do a lot of the usual commands of a filesystem: 
 
 <blockquote>
-<code class="bash"># removing a file<br>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;"># removing a file<br>
 hdfs dfs -rm /path/to/file<br>
 # removing a folder <br>
 hdfs dfs -rm -r /path/to/folder<br>
@@ -520,13 +520,13 @@ In this first part, we will perform a <b>WordCount</b> on <code>sherlock_holmes.
 To run this file, the syntax is the following: 
 
 <blockquote>
-<code class="bash">hadoop jar /home/ubuntu/code/wordcount.jar WordCount /data/sherlock_holmes.txt /output_wordcount</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hadoop jar /home/ubuntu/code/wordcount.jar WordCount /data/sherlock_holmes.txt /output_wordcount</code>
 </blockquote>
 
 More generally, to perform a <b>MapReduce</b>, we can do the following:
 
 <blockquote>
-<code class="bash">hadoop jar /path/to/jar/file ClassName ...</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hadoop jar /path/to/jar/file ClassName ...</code>
 </blockquote>
 
 Here the two arguments are the input file and an output folder. Note that this folder should not exist before running this code. 
@@ -535,13 +535,13 @@ Once run, you can see that Hadoop is very wordy: there are a lot of information 
 Now we can check the result of our job: 
 
 <blockquote>
-<code class="bash">hdfs dfs -ls -R /output_wordcount</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -ls -R /output_wordcount</code>
 </blockquote>
 
 As you can see a file named <code>part-r-00000</code> has been created. It contains the result of the Job. 
 
 <blockquote>
-<code class="bash">hdfs dfs -cat /output_wordcount/part-r-00000</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -cat /output_wordcount/part-r-00000</code>
 </blockquote>
 
 This name corresponds to the fact that we have the output of a single reducer. If we had multiple reducers, we would have different files corresponding to the different partitions of our results with names incremented by 1 for each reducer. 
@@ -558,20 +558,20 @@ Before running the command, we are just going to alias the command: this will ea
 Open <code>.bashrc</code>:
 
 <blockquote>
-<code class="bash">nano /home/ubuntu/.bashrc</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/.bashrc</code>
 </blockquote>
 
 Append the following lines to the file: 
 
 <blockquote>
-<code class="bash">alias hadoop_streaming="hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar"</code>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">alias hadoop_streaming="hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar"</code>
 </blockquote>
 
 
 You can run the job by doing the following command: 
 
 <blockquote>
-<code class="bash">hadoop_streaming \<br>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hadoop_streaming \<br>
 -file ~/code/mapper.py \<br>
 -mapper ~/code/mapper.py \<br>
 -file ~/code/reducer.py \<br>
@@ -585,7 +585,7 @@ We have to specify the code files twice because they are not hosted on the distr
 You can check the results: 
 
 <blockquote>
-<code class="bash">hdfs dfs -ls -R /output_wordcount_streaming<br>
+<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -ls -R /output_wordcount_streaming<br>
 hdfs dfs -cat /output_wordcount_streaming/part-00000</code>
 </blockquote>
 

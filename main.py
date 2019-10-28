@@ -8,6 +8,8 @@ from wtforms.fields import SubmitField
 from markdown2 import markdown
 import re
 import os
+from bs4 import BeautifulSoup
+from utils import format_text2
 
 chevrons = {
     'right': '&gt;',
@@ -22,25 +24,6 @@ code_block_begin_re = re.compile('<blockquote>\r\n<code>\r\n')
 code_block_end_re = re.compile('</code>\r\n</blockquote>')
 breaking_line_html = re.compile('\<br\>')
 breaking_line = re.compile('\r\n')
-
-
-def format_text(text):
-    codes1 = code_block_begin_re.split(text)
-    codes = []
-    for c in codes1:
-        codes.extend(code_block_end_re.split(c)[:-1])
-    new_codes = []
-    for code in codes:
-        if (not ('&gt;' in code)) or (not ('&lt;' in code)):
-            code = code.replace('<', '&lt;')
-            code = code.replace('>', '&gt;')
-        if len(breaking_line_html.findall(code)) == 0:
-            code = code.replace('\r\n', '<br>\r\n')
-        new_codes.append(code)
-
-    for i in range(len(codes)):
-        text = text.replace(codes[i], new_codes[i])
-    return text
 
 
 template_slider = open('slider.html', 'r').read()
@@ -64,7 +47,7 @@ def index():
         # getting the text
         text = form.pagedown.data
 
-        text = format_text(text)
+        text = format_text2(text)
         text = text.replace('&lt;br&gt;', '')
         #saving markdown content
         with open('temp.md', 'w') as file:

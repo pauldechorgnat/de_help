@@ -1,7 +1,7 @@
-<hr style="border-color:#75DFC1; width:80%;"><center>
+<hr style="border-color:#75DFC1; width:80%;"/><center>
 <h1>Hadoop</h1>
 <h2>Distributed Architectures</h2></center>
-<hr style="border-color:#75DFC1; width:80%;">
+<hr style="border-color:#75DFC1; width:80%;"/>
 
 The volume of data created is exponentially increasing: to get a sense of this volume, each minute 103 million spam emails, 3.6 million Google searches, 450 000 tweets are exchanged. The forecast are that this volume will be multiplied by 10 in 2025. 
 
@@ -18,7 +18,7 @@ When faced to the problem of Big Data storage, there are mainly two ways to incr
 
 ### Some definitions 
 A **cluster** is a set of machines also called **nodes**. Those machine can be linked to each other or have special network architectures. 
-Generally speaking some machines are more important than other: they are more powerful and are thus more oriented toward orchestration, planning, ... <br>Those are called **master** nodes while the regular one are called **worker** or **slave**: they are the one actually doing the computations and the storing.
+Generally speaking some machines are more important than other: they are more powerful and are thus more oriented toward orchestration, planning, ... <br/>Those are called **master** nodes while the regular one are called **worker** or **slave**: they are the one actually doing the computations and the storing.
  
 ### Distributed architectures are cheaper
 For decades, improvements on transistor capacities, hence on storage and computing facilities have been increasing exponentially, following Moore's law. Lately, due to physical limitations, we witnessed a downturn in this trend.  
@@ -28,7 +28,7 @@ It is now cheaper to buy cheap hardware, also called commodity hardware, in numb
 There are two important aspect in distributed architectures: 
 <ul>
 <li><b>Partitioning</b>: data is cut into blocks of a given maximal size and spread across the cluster.</li>
-<li><b>Replication</b>: data is replicated which means that we create copies of our partitions.
+<li><b>Replication</b>: data is replicated which means that we create copies of our partitions.</li>
 </ul>
 
 @slider partition_replication_slider
@@ -37,7 +37,7 @@ At first you may think that this increases the demand for storage, which is true
 
 @slider redundancy_security_slider
 
-<i>In this example, a document is spread on a cluster of 6 machines. It is very simplified but we have to have 3 machines down before not being able to access this document. The likeliness of this happening in a time so short that no one can react is low. Moreover tools are designed to see when a machine is down and take action so that the data is replicated on another machine so that we have all our replicas in the cluster.<br>
+<i>In this example, a document is spread on a cluster of 6 machines. It is very simplified but we have to have 3 machines down before not being able to access this document. The likeliness of this happening in a time so short that no one can react is low. Moreover tools are designed to see when a machine is down and take action so that the data is replicated on another machine so that we have all our replicas in the cluster.<br/>
 In some companies where data is a very sensible issue, data is replicated inside data centers which are themselves replicated in different countries in order to avoid natural disasters (floods, earthquake, ...) or man made phenomena (attacks, war, ...).</i>
 
 ### Distributed architectures speeds up computing
@@ -81,13 +81,11 @@ During the <b>Map</b> phase, the partitions of the text are lowered, tokenized a
 The pseudo-code for this step is the following:
 
 <blockquote>
-<code>
-INPUT: data (list of strings)<br>
+<code>INPUT: data (list of strings)<br>
 FOR EACH partition IN data:<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
-&emsp;&emsp;FOR EACH token IN token_list:<br>
-&emsp;&emsp;&emsp;&emsp;EMIT((token, 1))<br>
-</code>
+  token_list = TOKENIZATION(partition)<br>
+  FOR EACH token IN token_list:<br>
+    EMIT((token, 1))</code>
 </blockquote>
 
 Remember that the <b>Shuffle</b> phase forces all values corresponding to the same key to be on the same reducing machine. So on every machine used during the <b>Reduce</b> phase, we have a set of keys, corresponding to some tokens present in the text and for each key a list of ones of length corresponding to the number of instances of this token over the partitions. 
@@ -95,13 +93,11 @@ Remember that the <b>Shuffle</b> phase forces all values corresponding to the sa
 The pseudo-code for the <b>Reduce</b> is given in the following block: the code is given only for one key because during the <b>Reduce</b>, keys are treated totally independently.
 
 <blockquote>
-<code>
-INPUT: key (string), list_of_values (list of integers)<br>
+<code>INPUT: key (string), list_of_values (list of integers)<br>
 s = 0<br>
 FOR EACH i IN list_of_values:<br>
-&emsp;&emsp;s = s + i<br>
-EMIT((key, s))<br>
-</code>
+  s = s + i<br>
+EMIT((key, s))</code>
 </blockquote>
   
 @slider mapreduce_wordcount_slider
@@ -115,20 +111,17 @@ You may have noticed that during the Map phase of Wordcount, we have emitted the
 We can aggregate those values during the <b>Map</b> phase using a <b>Combiner</b>: this can be considered as a <b>Reduce</b> phase in the mapper. If we take the example of Wordcount, the new pseudo-code for the <b>Map</b> is the following: 
 
 <blockquote>
-<code>
-INPUT: data (list of strings)<br>
+<code>INPUT: data (list of strings)<br>
 temp = DICTIONARY(string, integer)<br>
 FOR EACH partition IN data:<br>
-&emsp;&emsp;token_list = TOKENIZATION(partition)<br>
-&emsp;&emsp;FOR EACH token IN token_list:<br>
-&emsp;&emsp;&emsp;&emsp;IF token in temp.keys:<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1 + temp.get(token))<br>
-&emsp;&emsp;&emsp;&emsp;ELSE:<br>
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; temp.set(token, 1)<br>
-<br>
+  token_list = TOKENIZATION(partition)<br>
+  FOR EACH token IN token_list:<br>
+    IF token in temp.keys:<br>
+       temp.set(token, 1 + temp.get(token))<br>
+    ELSE:<br>
+       temp.set(token, 1)<br>
 FOR EACH token IN temp.keys:<br>
-&emsp;&emsp;EMIT((token, temp.get(token))<br>
-</code>
+  EMIT((token, temp.get(token))</code>
 </blockquote>
 
 @slider wordcount_combiner_slider
@@ -143,7 +136,7 @@ This ensures an even distribution of keys over reducer nodes: each machine shoul
  
 @slider mapreduce_partitioners_slider
 
-<i>In this example, the key <code>key1</code> is over-represented. <br>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</i>
+<i>In this example, the key <code>key1</code> is over-represented. <br/>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</i>
 
 Partitioners cannot be coded dynamically: you have to know a priori the balance of values by key to implement one that will balance evenly the workload.
 
@@ -170,9 +163,7 @@ As stated before, <b>HDFS</b> is in charge of distributed storage. There are mul
 <li><b>Namenode</b>: the namenode is a daemon running on a master node: it contains meta-data about the location of the partitions. The namenode interacts with the datanodes to read or write data. </li>
 <li><b>SecondaryNamenode</b>: secondary namenodes are daemons running on other master nodes. They are taking snapshots of the namenode at regular time intervals. If the namenode crashes, they are able to take over its role</li>
 </ul>
-
 <h3>YARN</h3>
-
 <b>YARN</b> is in charge of orchestrating work and jobs. There are several daemons running within YARN: 
 <ul>
 <li>The <b>Resource Manager</b> is the daemon in attributing resources to the different worker nodes. It runs on a master node.</li>
@@ -180,7 +171,6 @@ As stated before, <b>HDFS</b> is in charge of distributed storage. There are mul
 <li>The <b>Node Manager</b> is a daemon running on the worker nodes. It communicates with the <b>Resource Manager</b> at all time and with the <b>Application Manager</b> during the runtime of the application.</li>
 <li><b>Containers</b> are the daemons triggered by the <b>Resource Manager</b> at the start of an application. They are in charge of the actual work. In fact, containers are <a href="https://en.wikipedia.org/wiki/Java_virtual_machine">JVM</a> with allocated disk and memory.</li>
 </ul>
-
 <center>?????????????????????????????????????????????????????????????????????????????????????????????????????????</center>
 
 
@@ -195,9 +185,7 @@ Then, those containers communicate to the <b>Application Manager</b> which is in
 
 
 <h2>Installing Hadoop</h2>
-
 <i>In this part, we are going to install <b>Hadoop</b> in a pseudo-distributed mode. The components have already been downloaded but the setting must be done.</i>
-
 <h3>Installation modes</h3>
 
 There are 3 available installation modes: 
@@ -206,7 +194,6 @@ There are 3 available installation modes:
 <li><b>Pseudo-distributed mode</b>: This mode is a demonstration mode: we simulate the functioning in a distributed mode on a single machine by routing the pseudo-nodes to different ports of the machine. </li>
 <li><b>Stand-alone mode</b>: This is also a demonstration mode where one machine is taken as a single node network and the local file system is used in place of the distributed one.</li>
 </ul>
-
 <h3>Installation</h3>
 
 The installation files are located under the archive <code>/home/ubuntu/hadoop.tar.gz</code>. 
@@ -214,16 +201,12 @@ The installation files are located under the archive <code>/home/ubuntu/hadoop.t
 
 First, we need to decompress the archive:
 <blockquote>
-<code>
-tar xvf /home/ubuntu/hadoop.tar.gz<br>
-</code>
+<code>tar xvf /home/ubuntu/hadoop.tar.gz</code>
 </blockquote>
 
 To check that it indeed has been decompressed, you can use the command: 
 <blockquote>
-<code>
-ls -l | grep hadoop<br>
-</code>
+<code>ls -l | grep hadoop</code>
 </blockquote>
 
 
@@ -233,18 +216,14 @@ You should see both the archive and the folder with the same name (except the ex
 Now we need to edit the <code>/home/ubuntu/.bashrc</code> file to give it paths to Hadoop files. 
 
 <i>We are going to use <code>nano</code> but you can use any text editor you want.</i>
-
 <blockquote>
-<code>
-nano /home/ubuntu/.bashrc<br>
-</code>
+<code>nano /home/ubuntu/.bashrc</code>
 </blockquote>
 
 Append those lines to the file: 
 
 <blockquote>
-<code>
-# HADOOP PATHS<br>
+<code># HADOOP PATHS<br>
 export JAVA_HOME=/usr<br>
 export PATH=$PATH:/usr/bin/java<br>
 export HADOOP_HOME=/home/hduser/hadoop<br>
@@ -253,25 +232,20 @@ export HADOOP_MAPRED_HOME=$HADOOP_HOME<br>
 export HADOOP_COMMON_HOME=$HADOOP_HOME<br>
 export HADOOP_HDFS_HOME=$HADOOP_HOME<br>
 export YARN_HOME=$HADOOP_HOME<br>
-export PATH=$PATH:$HADOOP_HOME/bin<br>
-</code>
+export PATH=$PATH:$HADOOP_HOME/bin</code>
 </blockquote>
 
 Close the file and commit those changes with the <code>source</code>: 
 
 <blockquote>
-<code>
-source /home/ubuntu/.bashrc<br>
-</code>
+<code>source /home/ubuntu/.bashrc</code>
 </blockquote>
 
 We are going to check that <b>Java</b> and <b>Hadoop</b> are installed: 
 
 <blockquote>
-<code>
-java -version | grep openjdk<br>
-hadoop version | grep Hadoop<br>
-</code>
+<code>java -version | grep openjdk<br>
+hadoop version | grep Hadoop</code>
 </blockquote>
 
 You should see the version of the two softwares. 
@@ -286,38 +260,30 @@ This file contains settings for the <b>namenode</b>. The namenode address will b
 Open the file: 
 
 <blockquote>
-<code>
-nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml<br>
-</code>
+<code>nano /home/ubuntu/hadoop/etc/hadoop/core-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration</code>, paste the following lines:
 
 <blockquote>
-<code>
-&lt;property&gt;<br>
+<code>&lt;property&gt;<br>
 &lt;name&gt;fs.default.name &lt;/name&gt;<br>
 &lt;value&gt;hdfs://localhost:9000 &lt;/value&gt;<br>
-&lt;/property&gt;<br>
-</code>
+&lt;/property&gt;</code>
 </blockquote>
-
 <h4><b>hdfs-site.xml</b></h4>
 This file contains information about how HDFS functions: we are going to choose a replication factor of 2, e.g. there will be 3 copies of each file. We will specify also a local directory to store namenode data and the datanode data. Finally, we need to tell him not to check for security clearance at each action. 
 
 Open the file:
 
 <blockquote>
-<code>
-nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml<br>
-</code>
+<code>nano /home/ubuntu/hadoop/etc/hadoop/hdfs-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 
 <blockquote>
-<code>
-&lt;property&gt;<br>
+<code>&lt;property&gt;<br>
 &lt;name&gt;dfs.replication&lt;/name&gt;<br>
 &lt;value&gt;2&lt;/value&gt;<br>
 &lt;/property&gt;<br>
@@ -332,10 +298,8 @@ Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 &lt;property&gt;<br>
     &lt;name&gt;dfs.data.dir&lt;/name&gt;<br>
     &lt;value&gt;/home/ubuntu/data/datanode_data&lt;/value&gt;<br>
-&lt;/property&gt;<br>
-</code>
+&lt;/property&gt;</code>
 </blockquote>
-
 <h4><b>mapred-site.xml</b></h4>
 
 In this file, we will simply state that the resource manager that will be used is YARN.
@@ -343,30 +307,23 @@ In this file, we will simply state that the resource manager that will be used i
 First, we need to copy/paste the template of this configuration file: 
 
 <blockquote>
-<code>
-cp /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml.template /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
-</code>
+<code>cp /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml.template /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml</code>
 </blockquote>
 
 Open the file:
 
 <blockquote>
-<code>
-nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml<br>
-</code>
+<code>nano /home/ubuntu/hadoop/etc/hadoop/mapred-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 
 <blockquote>
-<code>
-&lt;property&gt;<br>
+<code>&lt;property&gt;<br>
 &lt;name&gt;mapreduce.framework.name&lt;/name&gt;<br>
 &lt;value&gt;yarn&lt;/value&gt;<br>
-&lt;/property&gt;<br>
-</code>
+&lt;/property&gt;</code>
 </blockquote>
-
 <h4><b>yarn-site.xml</b></h4>
 
 This files contains <b>YARN</b> settings. We simply tell him what <b>Java</b> classes should be used for the shuffle step: 
@@ -374,69 +331,53 @@ This files contains <b>YARN</b> settings. We simply tell him what <b>Java</b> cl
 Open the file:
 
 <blockquote>
-<code>
-nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml<br>
-</code>
+<code>nano /home/ubuntu/hadoop/etc/hadoop/yarn-site.xml</code>
 </blockquote>
 
 Within the tags <code>&lt;configuration&gt;</code>, paste the following lines:
 
 <blockquote>
-<code>
-&lt;property&gt;<br>
+<code>&lt;property&gt;<br>
 &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;<br>
 &lt;value&gt;mapreduce_shuffle&lt;/value&gt;<br>
 &lt;/property&gt;<br>
 &lt;property&gt;<br>
 &lt;name&gt;yarn.nodemanager.auxservices.mapreduce.shuffle.class&lt;/name&gt;<br>
 &lt;value&gt;org.apache.hadoop.mapred.ShuffleHandler&lt;/value&gt;<br>
-&lt;/property&gt;<br>
-</code>
+&lt;/property&gt;</code>
 </blockquote>
-
 <h4><b>hadoop-env.sh</b></h4>
 In this file, we will just specify where <b>Hadoop</b> can find <b>Java</b>.
 
 Open the file: 
 
 <blockquote>
-<code>
-nano /home/ubuntu/hadoop/etc/hadoop/hadoop-env.sh<br>
-</code>
+<code>nano /home/ubuntu/hadoop/etc/hadoop/hadoop-env.sh</code>
 </blockquote>
 
 Append this line to the file:
 
 <blockquote>
-<code>
-export JAVA_HOME=/usr<br>
-</code>
+<code>export JAVA_HOME=/usr</code>
 </blockquote>
-
 <h3>Initialization</h3>
 
 First we need to format the namenode: 
 
 <blockquote>
-<code>
-hdfs namenode -format <br>
-</code>
+<code>hdfs namenode -format </code>
 </blockquote>
 
 You can check that the folders containing the created by using the following command:
 
 <blockquote>
-<code>
-ls -l /home/ubuntu/ | grep _data<br>
-</code>
+<code>ls -l /home/ubuntu/ | grep _data</code>
 </blockquote>
 
 Now we need to start the daemons for <b>HDFS</b>: 
 
 <blockquote>
-<code>
-/home/ubuntu/hadoop/sbin/start-dfs.sh<br>
-</code>
+<code>/home/ubuntu/hadoop/sbin/start-dfs.sh</code>
 </blockquote>
 
 You can see which <b>Java</b> processes are running at anytime by using the command <code>jps</code>.
@@ -451,9 +392,7 @@ If you run this command here, you should see:
 Now we can start <b>YARN</b> daemons:
 
 <blockquote>
-<code>
-/home/ubuntu/hadoop/sbin/start-yarn.sh<br>
-</code>
+<code>/home/ubuntu/hadoop/sbin/start-yarn.sh</code>
 </blockquote>
 
 If you run <code>jps</code>, you should see: 
@@ -461,15 +400,12 @@ If you run <code>jps</code>, you should see:
 <li>ResourceManager</li>
 <li>NodeManager</li>
 </ul>
-
 <h3>HDFS practice</h3>
 
 For this part, we have downloaded a book from <a href="https://www.gutenberg.org/">Project Gutenberg</a> library: The Adventures of Sherlock Holmes. It is a simple text file available on your local file system at <code>/home/ubuntu/sherlock_holmes.txt</code>. You can check the headers of the book with the following command: 
 
 <blockquote>
-<code>
-head -n 20 /home/ubuntu/sherlock_holmes.txt<br>
-</code>
+<code>head -n 20 /home/ubuntu/sherlock_holmes.txt</code>
 </blockquote>
 
 Most of the commands that we are going to use are based on the same pattern: <code>hdfs dfs -...</code> and we simply to write those commands into the shell. 
@@ -477,27 +413,19 @@ Most of the commands that we are going to use are based on the same pattern: <co
 First, let's create a folder named <code>data</code> in our distributed file system: 
 
 <blockquote>
-<code>
-hdfs dfs -mkdir /data<br>
-</code>
+<code>hdfs dfs -mkdir /data</code>
 </blockquote>
 
 You can check that the folder has indeed been created in the distributed file system and not in the local one by checking both systems at the root: 
 
 <b>Local file system</b>
 <blockquote>
-<code>
-ls / | grep data<br>
-</code>
+<code>ls / | grep data</code>
 </blockquote>
-
 <b>HDFS</b>
 <blockquote>
-<code>
-hdfs dfs -ls / | grep data<br>
-</code>
+<code>hdfs dfs -ls / | grep data</code>
 </blockquote>
-
 <code>hdfs dfs -ls</code> is used in the same way <code>ls</code> is used in a usual shell. HDFS is organised as any UNIX file sytem, starting from the root <code>/</code>. 
 
 We can also use the <code>-R</code> argument to have a recursive view of the folders: 
@@ -509,25 +437,19 @@ Notice that we always need to specify the absolute path as there are no current 
 We are now about to put our book into <b>HDFS</b>: 
 
 <blockquote>
-<code>
-hdfs dfs -put /home/ubuntu/sherlock_holmes.txt /data/<br>
-</code>
+<code>hdfs dfs -put /home/ubuntu/sherlock_holmes.txt /data/</code>
 </blockquote>
 
 We can also use <code>-copyFromLocal</code>
 <blockquote>
-<code>
-hdfs dfs -copyFromLocal /home/ubuntu/sherlock_holmes.txt /data/<br>
-</code>
+<code>hdfs dfs -copyFromLocal /home/ubuntu/sherlock_holmes.txt /data/</code>
 </blockquote>
 
 The main difference between those two commands is that <code>-put</code> can handle multiple files at once while <code>-copyFromLocal</code> cannot. 
 
 The syntax is: 
 <blockquote>
-<code>
-hdfs dfs -put &lt;local_file_path&gt; &lt;distributed_path&gt;<br>
-</code>
+<code>hdfs dfs -put &lt;local_file_path&gt; &lt;distributed_path&gt;</code>
 </blockquote>
 
 This command is very similar to <code>cp</code> or <code>scp</code>.
@@ -535,24 +457,18 @@ This command is very similar to <code>cp</code> or <code>scp</code>.
 We can check that the file is indeed here: 
 
 <blockquote>
-<code>
-hdfs dfs -ls -R /<br>
-</code>
+<code>hdfs dfs -ls -R /</code>
 </blockquote>
 
 Or print its content using <code>-cat</code>: 
 
 <blockquote>
-<code>
-hdfs dfs -cat /data/sherlock_holmes.txt<br>
-</code>
+<code>hdfs dfs -cat /data/sherlock_holmes.txt</code>
 </blockquote>
 
 The contrary can be done using <code>-get</code>: 
 <blockquote>
-<code>
-hdfs dfs -get &lt;distributed_path&gt; &lt;local_path&gt;<br>
-</code>
+<code>hdfs dfs -get &lt;distributed_path&gt; &lt;local_path&gt;</code>
 </blockquote>
  
 
@@ -560,27 +476,18 @@ hdfs dfs -get &lt;distributed_path&gt; &lt;local_path&gt;<br>
 Of course we can do a lot of the usual commands of a filesystem: 
 
 <blockquote>
-<code>
-# removing a file<br>
+<code># removing a file<br>
 hdfs dfs -rm /path/to/file<br>
-<br>
 # removing a folder <br>
 hdfs dfs -rm -r /path/to/folder<br>
-<br>
 # copying a file from and to the distributed file system<br>
 hdfs dfs -cp /path/to/file1 /path/to/file2<br>
-<br>
 # copying a folder from and to the distributed file system<br>
 hdfs dfs -cp -r /path/to/folder1 /path/to/folder2<br>
-<br>
-<br>
 # moving  a file from and to the distributed file system <br>
 hdfs dfs -mv /path/to/file /new/path/to/file<br>
-<br>
 # moving  a folder from and to the distributed file system <br>
-hdfs dfs -mv -r /path/to/folder /new/path/to/folder<br>
-<br>
-</code>
+hdfs dfs -mv -r /path/to/folder /new/path/to/folder</code>
 </blockquote>
 
 We can also use regular expressions to address multiple files at the same time. 
@@ -588,24 +495,20 @@ We can also use regular expressions to address multiple files at the same time.
 <h4>User Interface</h4>
 
 HDFS has also a way to visualize the file system information: if you open a window on the 50070 port, you should be able to see the UI. 
-For example, you can see your files in <code>Utilities>Browse the file system </code>.
+For example, you can see your files in <code>Utilities&gt;Browse the file system </code>.
 
 
 <h4>Exercise</h4>
-
 <i>In the folder </i><code>/home/ubuntu/books</code><i> there are </i><code>moby_dick.txt</code><i> and </i><code>alice.txt</code><i>. Try to do the following: 
 <ul>
-<li>create a folder </i><code>/data/books</code><i>.</li>
+<li>create a folder </li></ul></i><code>/data/books</code><i>.</i>
 <li>copy both books from local file system to this folder.</li>
-<li>copy the file </i><code>sherlock_holmes.txt</code><i> on </i><b>HDFS</b><i> to this new folder. </li>
+<li>copy the file </li><code>sherlock_holmes.txt</code><i> on </i><b>HDFS</b><i> to this new folder. </i>
 <li>print the content of those files.</li>
-<li>make a copy of the folder </i><code>/data/books_backup</code><i>.</li>
-<li>make a copy of </i><code>moby_dick.txt</code><i> named </i><code>moby_dick2.txt</code><i> in the same folder.</li>
+<li>make a copy of the folder </li><code>/data/books_backup</code><i>.</i>
+<li>make a copy of </li><code>moby_dick.txt</code><i> named </i><code>moby_dick2.txt</code><i> in the same folder.</i>
 <li>delete those two files from this folder in one command using a regular expression.</li>
-<li>delete the folder </i><code>/data/books</code><i>.</li>
-</ul>
-</i>
-
+<li>delete the folder </li><code>/data/books</code><i>.</i>
 <h2>MapReduce practice</h2>
 
 We are going to execute a <b>MapReduce</b> job performing wordcount. 
@@ -617,17 +520,13 @@ In this first part, we will perform a <b>WordCount</b> on <code>sherlock_holmes.
 To run this file, the syntax is the following: 
 
 <blockquote>
-<code>
-hadoop jar /home/ubuntu/code/wordcount.jar WordCount /data/sherlock_holmes.txt /output_wordcount<br>
-</code>
+<code>hadoop jar /home/ubuntu/code/wordcount.jar WordCount /data/sherlock_holmes.txt /output_wordcount</code>
 </blockquote>
 
 More generally, to perform a <b>MapReduce</b>, we can do the following:
 
 <blockquote>
-<code>
-hadoop jar /path/to/jar/file ClassName ...<br>
-</code>
+<code>hadoop jar /path/to/jar/file ClassName ...</code>
 </blockquote>
 
 Here the two arguments are the input file and an output folder. Note that this folder should not exist before running this code. 
@@ -636,17 +535,13 @@ Once run, you can see that Hadoop is very wordy: there are a lot of information 
 Now we can check the result of our job: 
 
 <blockquote>
-<code>
-hdfs dfs -ls -R /output_wordcount<br>
-</code>
+<code>hdfs dfs -ls -R /output_wordcount</code>
 </blockquote>
 
 As you can see a file named <code>part-r-00000</code> has been created. It contains the result of the Job. 
 
 <blockquote>
-<code>
-hdfs dfs -cat /output_wordcount/part-r-00000<br>
-</code>
+<code>hdfs dfs -cat /output_wordcount/part-r-00000</code>
 </blockquote>
 
 This name corresponds to the fact that we have the output of a single reducer. If we had multiple reducers, we would have different files corresponding to the different partitions of our results with names incremented by 1 for each reducer. 
@@ -663,32 +558,26 @@ Before running the command, we are just going to alias the command: this will ea
 Open <code>.bashrc</code>:
 
 <blockquote>
-<code>
-nano /home/ubuntu/.bashrc<br>
-</code>
+<code>nano /home/ubuntu/.bashrc</code>
 </blockquote>
 
 Append the following lines to the file: 
 
 <blockquote>
-<code>
-alias hadoop_streaming="hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar"<br>
-</code>
+<code>alias hadoop_streaming="hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar"</code>
 </blockquote>
 
 
 You can run the job by doing the following command: 
 
 <blockquote>
-<code>
-hadoop_streaming \<br>
+<code>hadoop_streaming \<br>
 -file ~/code/mapper.py \<br>
 -mapper ~/code/mapper.py \<br>
 -file ~/code/reducer.py \<br>
 -reducer ~/code/reducer.py \<br>
 -input /data/sherlock_holmes.txt \<br>
--output /output_wordcount_streaming<br>
-</code>
+-output /output_wordcount_streaming</code>
 </blockquote>
 
 We have to specify the code files twice because they are not hosted on the distributed file system. Moreover the output argument is still a non-existing folder in <b>HDFS</b>.
@@ -696,26 +585,21 @@ We have to specify the code files twice because they are not hosted on the distr
 You can check the results: 
 
 <blockquote>
-<code>
-hdfs dfs -ls -R /output_wordcount_streaming<br>
-hdfs dfs -cat /output_wordcount_streaming/part-00000<br>
-</code>
+<code>hdfs dfs -ls -R /output_wordcount_streaming<br>
+hdfs dfs -cat /output_wordcount_streaming/part-00000</code>
 </blockquote>
 
 The code is a bit simpler than before so the results are a bit rougher. Yet we get the same idea. 
 
 <h4>Exercise</h4>
-
 <i>In this part, we will use the file </i><code>sentiment.csv</code><i> in the folder </i><code>/home/ubuntu/datasets</code><i>. This file contains two columns: the first represents the text of tweets while the second represents the sentiment (0 is for negative, 1 for positive). 
 
 You shall do the following: 
 <ul>
-<li>put the file </i><code>sentiment.csv</code><i> into </i><b>HDFS</b><i>.</li>
-<li>create a mapper and a reducer scripts in </i><b>Python</b><i> that will count the number of positive and negative tweets.</li>
-<li>run this job and get its output into a folder </i><code>/output_count</code><i>.</li>
-<li>import this file from </i><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</li>
-</ul>
-
+<li>put the file </li></ul></i><code>sentiment.csv</code><i> into </i><b>HDFS</b><i>.</i>
+<li>create a mapper and a reducer scripts in </li><b>Python</b><i> that will count the number of positive and negative tweets.</i>
+<li>run this job and get its output into a folder </li><code>/output_count</code><i>.</i>
+<li>import this file from </li><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</i>
 <h2>Conclusion</h2>
 
 In this lesson, we have seen the importance of distributed systems and the advantages it presents compared to classical architectures. We have also seen how to code in a framework like <b>MapReduce</b> and how to use specifically <b>Hadoop</b>. 

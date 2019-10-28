@@ -7,3 +7,4 @@ markdown2
 Markdown
 google-api-python-client
 google-api-support
+bs4

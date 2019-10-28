@@ -136,7 +136,7 @@ This ensures an even distribution of keys over reducer nodes: each machine shoul
  
 @slider mapreduce_partitioners_slider
 
-<i>In this example, the key <code>key1</code> is over-represented. <br/>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</i>
+<i>In this example, the key <code>key1</code> is over-represented. <br>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</br></i>
 
 Partitioners cannot be coded dynamically: you have to know a priori the balance of values by key to implement one that will balance evenly the workload.
 

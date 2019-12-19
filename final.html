@@ -624,76 +624,77 @@ For example, you can see your files in <code>Utilities&gt;Browse the file system
 
 <h4>Exercise</h4>
 
-<p><i>In the folder </i><code>/home/ubuntu/books</code><i> there are </i><code>moby<em>dick.txt</code><i> and </i><code>alice.txt</code><i>. Try to do the following: 
+<p><i>In the folder </i><code>/home/ubuntu/books</code><i> there are </i><code>moby_dick.txt</code><i> and </i><code>alice.txt</code><i>. Try to do the following: </p>
+
 <ul>
 <li>create a folder </li></ul></i><code>/data/books</code><i>.</i>
 <li>copy both books from local file system to this folder.</li>
-<li>copy the file </li><code>sherlock</em>holmes.txt</code><i> on </i><b>HDFS</b><i> to this new folder. </i>
+<li>copy the file </li><code>sherlock_holmes.txt</code><i> on </i><b>HDFS</b><i> to this new folder. </i>
 <li>print the content of those files.</li>
-<li>make a copy of the folder </li><code>/data/books<em>backup</code><i>.</i>
-<li>make a copy of </li><code>moby</em>dick.txt</code><i> named </i><code>moby_dick2.txt</code><i> in the same folder.</i>
+<li>make a copy of the folder </li><code>/data/books_backup</code><i>.</i>
+<li>make a copy of </li><code>moby_dick.txt</code><i> named </i><code>moby_dick2.txt</code><i> in the same folder.</i>
 <li>delete those two files from this folder in one command using a regular expression.</li>
-<li>delete the folder </li><code>/data/books</code><i>.</i></p>
-
+<li>delete the folder </li><code>/data/books</code><i>.</i>
 <h2>MapReduce practice</h2>
 
-<p>We are going to execute a <b>MapReduce</b> job performing wordcount. </p>
+We are going to execute a <b>MapReduce</b> job performing wordcount. 
 
 <h3>Hadoop MapReduce</h3>
 
-<p>In this first part, we will perform a <b>WordCount</b> on <code>sherlock_holmes.txt</code> using the <b>Hadoop MapReduce Java</b> library. The application is already coded and compiled in the file <code>wordcount.jar</code> but it is available <a href="lien-vers-wordcount.java">here</a>. Feel free to read this file to get the pattern on <b>MapReduce</b> job implementation. You'll note that we did not specify a number of mappers and reducers, so there will be only one of each by default. </p>
+In this first part, we will perform a <b>WordCount</b> on <code>sherlock_holmes.txt</code> using the <b>Hadoop MapReduce Java</b> library. The application is already coded and compiled in the file <code>wordcount.jar</code> but it is available <a href="lien-vers-wordcount.java">here</a>. Feel free to read this file to get the pattern on <b>MapReduce</b> job implementation. You'll note that we did not specify a number of mappers and reducers, so there will be only one of each by default. 
 
-<p>To run this file, the syntax is the following: </p>
+To run this file, the syntax is the following: 
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">hadoop jar /home/ubuntu/code/wordcount.jar WordCount /data/sherlock_holmes.txt /output_wordcount</code>
 </blockquote>
 
-<p>More generally, to perform a <b>MapReduce</b>, we can do the following:</p>
+More generally, to perform a <b>MapReduce</b>, we can do the following:
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">hadoop jar /path/to/jar/file ClassName ...</code>
 </blockquote>
 
-<p>Here the two arguments are the input file and an output folder. Note that this folder should not exist before running this code. 
-Once run, you can see that Hadoop is very wordy: there are a lot of information and it is sometimes difficult to read through it. </p>
+Here the two arguments are the input file and an output folder. Note that this folder should not exist before running this code. 
+Once run, you can see that Hadoop is very wordy: there are a lot of information and it is sometimes difficult to read through it. 
 
-<p>Now we can check the result of our job: </p>
+Now we can check the result of our job: 
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -ls -R /output_wordcount</code>
 </blockquote>
 
-<p>As you can see a file named <code>part-r-00000</code> has been created. It contains the result of the Job. </p>
+As you can see a file named <code>part-r-00000</code> has been created. It contains the result of the Job. 
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -cat /output_wordcount/part-r-00000</code>
 </blockquote>
 
-<p>This name corresponds to the fact that we have the output of a single reducer. If we had multiple reducers, we would have different files corresponding to the different partitions of our results with names incremented by 1 for each reducer. </p>
+This name corresponds to the fact that we have the output of a single reducer. If we had multiple reducers, we would have different files corresponding to the different partitions of our results with names incremented by 1 for each reducer. 
 
 <h3>Hadoop Streaming with Python</h3>
 
-<p>As stated before, <b>Hadoop Streaming</b> allows us to perform <b>MapReduce</b> jobs using other languages than <b>Java</b>. </p>
+As stated before, <b>Hadoop Streaming</b> allows us to perform <b>MapReduce</b> jobs using other languages than <b>Java</b>. 
 
-<p>In this part we are going to run a <b>MapReduce</b> job using <b>Python</b>.
-In the folder <code>/home/ubuntu/code</code>, you can find <code>mapper.py</code> and <code>reducer.py</code>. Feel free to read their content: we are basically doing the same thing as before but with <b>Python</b> we are only printing out results in the standard output. Note also that we need to specify which command is used at the beginning of the file. </p>
+In this part we are going to run a <b>MapReduce</b> job using <b>Python</b>.
+In the folder <code>/home/ubuntu/code</code>, you can find <code>mapper.py</code> and <code>reducer.py</code>. Feel free to read their content: we are basically doing the same thing as before but with <b>Python</b> we are only printing out results in the standard output. Note also that we need to specify which command is used at the beginning of the file. 
 
-<p>Before running the command, we are just going to alias the command: this will ease the command. </p>
+Before running the command, we are just going to alias the command: this will ease the command. 
 
-<p>Open <code>.bashrc</code>:</p>
+Open <code>.bashrc</code>:
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">nano /home/ubuntu/.bashrc</code>
 </blockquote>
 
-<p>Append the following lines to the file: </p>
+Append the following lines to the file: 
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">alias hadoop_streaming="hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar"</code>
 </blockquote>
 
-<p>You can run the job by doing the following command: </p>
+
+You can run the job by doing the following command: 
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">hadoop_streaming \<br>
@@ -705,30 +706,61 @@ In the folder <code>/home/ubuntu/code</code>, you can find <code>mapper.py</code
 -output /output_wordcount_streaming</code>
 </blockquote>
 
-<p>We have to specify the code files twice because they are not hosted on the distributed file system. Moreover the output argument is still a non-existing folder in <b>HDFS</b>.</p>
+We have to specify the code files twice because they are not hosted on the distributed file system. Moreover the output argument is still a non-existing folder in <b>HDFS</b>.
 
-<p>You can check the results: </p>
+You can check the results: 
 
 <blockquote>
 <code class="bash" onclick="copyText(this);" style="cursor:pointer;">hdfs dfs -ls -R /output_wordcount_streaming<br>
 hdfs dfs -cat /output_wordcount_streaming/part-00000</code>
 </blockquote>
 
-<p>The code is a bit simpler than before so the results are a bit rougher. Yet we get the same idea. </p>
+The code is a bit simpler than before so the results are a bit rougher. Yet we get the same idea. 
 
 <h4>Exercise</h4>
+<i>In this part, we will use the file </i><code>sentiment.csv</code><i> in the folder </i><code>/home/ubuntu/datasets</code><i>. This file contains two columns: the first represents the text of tweets while the second represents the sentiment (0 is for negative, 1 for positive). 
 
-<p><i>In this part, we will use the file </i><code>sentiment.csv</code><i> in the folder </i><code>/home/ubuntu/datasets</code><i>. This file contains two columns: the first represents the text of tweets while the second represents the sentiment (0 is for negative, 1 for positive). </p>
-
-<p>You shall do the following: 
+You shall do the following: 
 <ul>
 <li>put the file </li></ul></i><code>sentiment.csv</code><i> into </i><b>HDFS</b><i>.</i>
 <li>create a mapper and a reducer scripts in </li><b>Python</b><i> that will count the number of positive and negative tweets.</i>
 <li>run this job and get its output into a folder </li><code>/output_count</code><i>.</i>
-<li>import this file from </li><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</i></p>
+<li>import this file from </li><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</i>
+<h2>Conclusion on Hadoop</h2>
 
-<h2>Conclusion</h2>
+In this part, we have seen the importance of distributed systems and the advantages it presents compared to classical architectures. We have also seen how to code in a framework like <b>MapReduce</b> and how to use specifically <b>Hadoop</b>. 
 
-<p>In this lesson, we have seen the importance of distributed systems and the advantages it presents compared to classical architectures. We have also seen how to code in a framework like <b>MapReduce</b> and how to use specifically <b>Hadoop</b>. </p>
+The whole <b>Hadoop</b> framework is interesting as it is one of the main cornerstone of many tools: we shall see some of them in the following lessons: Hive, Pig, Spark, HBase, ...
 
-<p>The whole <b>Hadoop</b> framework is interesting as it is one of the main cornerstone of many tools: we shall see some of them in the following lessons: Hive, Pig, Spark, HBase, ...</p>
+<h2>Hive</h2>
+<h3>Introduction</h3>
+
+Hive is a very interesting element of the Data Engineer toolbox. It provides a SQL-like interface for tabular data. Development started in 2007 at Facebook and it was first released as an Open Source project in 2015. Today, Hive is managed by the Apache Foundation. 
+
+Hive is an abstraction of a relational database management system (RDBMS) but relies on Hadoop for distribution (repartition, partition, replication, …) and computation. It uses HQL (for Hive Query Language) which is a SQL like query language. 
+
+Data is stored as flat files in HDFS and queries are actually translated from HQL to MapReduce jobs using YARN.
+
+<h3> A word on execution planning</h3>
+
+There is an important component of Hive, the metastore. The metastore is a local relational database used to store metadata on the location of the flat files in HDFS and the schema of the tables. 
+
+The other important components of Hive are: 
+<ul>
+<li><b>CLI</b> (Command Line Interface): interface for the user to type in queries.</li>
+<li><b>driver</b>: daemon that interprets queries and is the interface between the CLI, the compiler and the execution engine.</li>
+<li><b>compiler</b>: daemon in charge of parsing the queries, dealing with the metadata needs and creating the DAG of the execution.</li>
+<li><b>execution engine</b>: daemon in charge of interpreting the queries into MapReduce jobs and making the interface with Hadoop.</li>
+</ul>
+
+<p>The mechanics are shown in the following figure: </p>
+
+<div class="slider">
+    <center>
+        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/hive_execution_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
+             onclick="next_slide(this, 14);return false;">
+    </center>
+</div>
+<div class="alert-info">
+DAGs (Directed Acyclic Graphs) are a very important concept of execution planning. A DAG is a graph whose nodes are individual tasks and edges represent dependencies between those tasks. The goal of a DAG is to be optimized: tasks that can be performed at once are regrouped and independent tasks are set to be run in parallel. 
+</div>

@@ -600,8 +600,38 @@ You shall do the following:
 <li>create a mapper and a reducer scripts in </li><b>Python</b><i> that will count the number of positive and negative tweets.</i>
 <li>run this job and get its output into a folder </li><code>/output_count</code><i>.</i>
 <li>import this file from </li><b>HDFS</b><i> into the </i><code>/home/ubuntu/datasets</code><i> folder.</i>
-<h2>Conclusion</h2>
+<h2>Conclusion on Hadoop</h2>
 
-In this lesson, we have seen the importance of distributed systems and the advantages it presents compared to classical architectures. We have also seen how to code in a framework like <b>MapReduce</b> and how to use specifically <b>Hadoop</b>. 
+In this part, we have seen the importance of distributed systems and the advantages it presents compared to classical architectures. We have also seen how to code in a framework like <b>MapReduce</b> and how to use specifically <b>Hadoop</b>. 
 
 The whole <b>Hadoop</b> framework is interesting as it is one of the main cornerstone of many tools: we shall see some of them in the following lessons: Hive, Pig, Spark, HBase, ...
+
+<h2>Hive</h2>
+<h3>Introduction</h3>
+
+Hive is a very interesting element of the Data Engineer toolbox. It provides a SQL-like interface for tabular data. Development started in 2007 at Facebook and it was first released as an Open Source project in 2015. Today, Hive is managed by the Apache Foundation. 
+
+Hive is an abstraction of a relational database management system (RDBMS) but relies on Hadoop for distribution (repartition, partition, replication, …) and computation. It uses HQL (for Hive Query Language) which is a SQL like query language. 
+
+Data is stored as flat files in HDFS and queries are actually translated from HQL to MapReduce jobs using YARN.
+
+<h3> A word on execution planning</h3>
+
+There is an important component of Hive, the metastore. The metastore is a local relational database used to store metadata on the location of the flat files in HDFS and the schema of the tables. 
+
+The other important components of Hive are: 
+<ul>
+<li><b>CLI</b> (Command Line Interface): interface for the user to type in queries.</li>
+<li><b>driver</b>: daemon that interprets queries and is the interface between the CLI, the compiler and the execution engine.</li>
+<li><b>compiler</b>: daemon in charge of parsing the queries, dealing with the metadata needs and creating the DAG of the execution.</li>
+<li><b>execution engine</b>: daemon in charge of interpreting the queries into MapReduce jobs and making the interface with Hadoop.</li>
+</ul>
+
+The mechanics are shown in the following figure: 
+
+@slider hive_execution_slider 
+
+
+<div class="alert-info">
+DAGs (Directed Acyclic Graphs) are a very important concept of execution planning. A DAG is a graph whose nodes are individual tasks and edges represent dependencies between those tasks. The goal of a DAG is to be optimized: tasks that can be performed at once are regrouped and independent tasks are set to be run in parallel. 
+</div>

@@ -15,14 +15,14 @@ When faced to the problem of Big Data storage, there are mainly two ways to incr
 <li> <b>Scaling Out</b>: buying less powerful machines and make them work together</li>
 </ul>
 <h3>Some definitions </h3>
-A **cluster** is a set of machines also called **nodes**. Those machine can be linked to each other or have special network architectures. 
-Generally speaking some machines are more important than other: they are more powerful and are thus more oriented toward orchestration, planning, ... <br/>Those are called **master** nodes while the regular one are called **worker** or **slave**: they are the one actually doing the computations and the storing.
+A <b>cluster</b> is a set of machines also called <b>nodes</b>. Those machine can be linked to each other or have special network architectures. 
+Generally speaking some machines are more important than other: they are more powerful and are thus more oriented toward orchestration, planning, ... <br/>Those are called <b>master</b> nodes while the regular one are called <b>worker</b> or <b>slave</b>: they are the one actually doing the computations and the storing.
  
 <h3>Distributed architectures are cheaper</h3>
 For decades, improvements on transistor capacities, hence on storage and computing facilities have been increasing exponentially, following Moore's law. Lately, due to physical limitations, we witnessed a downturn in this trend.  
 It is now cheaper to buy cheap hardware, also called commodity hardware, in number than buying the largest possible machine. For the same computer power it is cheaper to use distributed architectures than very powerful single machines.
 
-### Distributed architectures are more secured
+<h3> Distributed architectures are more secured</h3>
 There are two important aspect in distributed architectures: 
 <ul>
 <li><b>Partitioning</b>: data is cut into blocks of a given maximal size and spread across the cluster.</li>
@@ -30,6 +30,7 @@ There are two important aspect in distributed architectures:
 </ul>
 
 @slider partition_replication_slider
+
 
 At first you may think that this increases the demand for storage, which is true, but remember that storage is very cheap while data is key to business today. This partition/replication increases the security of the data. We cannot assume that the crash of a machine is an extraordinary event: this is an event that is going to happen so we need to have copies of the data that are available at any time:
 
@@ -42,6 +43,7 @@ In some companies where data is a very sensible issue, data is replicated inside
 Partitioning data allows different machine to work on the same document at the same time. This is a fundamental  aspect of distributed architectures: since documents are spread over different machine, those machines can work in parallel at the same time. Moreover, since the data is already stored in small computable chunks on different machines, we do not need to move data from a machine to another: we just have to pick available machines that have the data. 
 
 @slider distributed_computing_slider
+
 
 <h3>But distributed architectures face some problems</h3>
 
@@ -57,6 +59,7 @@ Moreover, the <b>CAP theorem</b> limits the possibilities of distributed systems
 </i>
 
 @slider cap_theorem_slider 
+
 
 <b>CAP</b> actually stands for <b>Consistency</b>, <b>Availability</b> and <b>Partition Tolerance</b>: the theorem states that you cannot have the three at the same time. 
 
@@ -99,6 +102,7 @@ EMIT((key, s))</code>
   
 @slider mapreduce_wordcount_slider
 
+
 The succession of a <b>Map</b>, <b>Shuffle</b> and <b>Reduce</b> phases is called a <b>Job</b>. We can combine multiple Jobs to perform complicated tasks. The number of reducers and mappers is up to the operator: if they is not a mapper by partition, some mappers will will take care of multiple partitions sequentially. On the other hand, having too many machines involved in an operation, some may not be available for other operations in the same time.
 
 <h3>Advanced MapReduce: Combiners</h3>
@@ -133,6 +137,7 @@ This ensures an even distribution of keys over reducer nodes: each machine shoul
  
 @slider mapreduce_partitioners_slider
 
+
 <i>In this example, the key <code>key1</code> is over-represented. <br/>If we let the default partitioner take care of the <b>Shuffle</b>, then one of the reducer is going to receive much more data to process than the other but if we take into account the a priori knowledge of the distribution of values, we can define a partitioner that will balance the workload over the reducers.</i>
 
 Partitioners cannot be coded dynamically: you have to know a priori the balance of values by key to implement one that will balance evenly the workload.
@@ -141,7 +146,7 @@ Partitioners cannot be coded dynamically: you have to know a priori the balance 
 
 Apache Hadoop is an Open Source framework for distributed architectures. It was first released in 2006 by Yahoo! but is now an Apache Foundation project. It is a widely used tool in Big Data to manage distributed storage and computing. 
 
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Hadoop.png"/></center>
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Hadoop.png" style="width:20%"/></center>
 <h3>Hadoop components</h3>
 
 Hadoop is mainly composed of 3 components: 
@@ -169,8 +174,8 @@ As stated before, <b>HDFS</b> is in charge of distributed storage. There are mul
 <li>The <b>Node Manager</b> is a daemon running on the worker nodes. It communicates with the <b>Resource Manager</b> at all time and with the <b>Application Manager</b> during the runtime of the application.</li>
 <li><b>Containers</b> are the daemons triggered by the <b>Resource Manager</b> at the start of an application. They are in charge of the actual work. In fact, containers are <a href="https://en.wikipedia.org/wiki/Java_virtual_machine">JVM</a> with allocated disk and memory.</li>
 </ul>
-<center>?????????????????????????????????????????????????????????????????????????????????????????????????????????</center>
 
+@slider slider_yarn_working
 
 The code of an application contains information about the location of the files (in HDFS or locally), about the number of mappers and reducers and of course the code of Mappers, Combiners, Partitioners and Reducers. 
 
@@ -629,7 +634,7 @@ The whole <b>Hadoop</b> framework is interesting as it is one of the main corner
 
 Hive is a very interesting element of the Data Engineer toolbox. It provides a SQL-like interface for tabular data. Development started in 2007 at Facebook and it was first released as an Open Source project in 2015. Today, Hive is managed by the Apache Foundation. 
 
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Hive.png"/></center>
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Hive.png" style="width:20%"/></center>
 
 
 Hive is an abstraction of a relational database management system (RDBMS) but relies on Hadoop for distribution (repartition, partition, replication, …) and computation. It uses HQL (for Hive Query Language) which is a SQL like query language. 
@@ -899,7 +904,7 @@ We are not going to go deeper on Hive for the moment: this is an interesting too
 
 Apache Pig is a useful tool to perform data manipulation in a distributed environment. It has its own language: <b>Pig Latin</b> and abstracts MapReduce jobs. The idea behind Pig is to simplify the use of MapReduce: for example, the wordcount jobs take about 60 lines in <b>Java</b> while it takes  5 lines with Pig. 
 
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Pig.png"/></center>
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Pig.png" style="width:20%"/></center>
 
 
 Moreover, Pig is using lazy evaluations and DAGs to optimize the queries: the queries are passed through a parser, an optimizer, a compiler and then an execution engine to run the queries. Pig can use different orchestrators (Yarn, Spark, Tez, ...) 
@@ -1023,7 +1028,7 @@ In some aspects, Hive and Pig are quite similar. They both can be used for Data 
 
 Finally, this last part will deal with Apache Sqoop: this tool can be used for ETL (Extract Transform Load) pipelines. Basically, Sqoop is used to transfer data from relational databases to HDFS (and the other way around). 
 
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Sqoop.png"/></center>
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Sqoop.png" style="width:20%"/></center>
 
 
 This can be very interesting to use the power of distributed computing power on regular databases, or to store transformed data into a datalake based on Hadoop. 

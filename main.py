@@ -66,12 +66,12 @@ def index():
                 slider_temp = template_slider
                 slider_temp = slider_temp.replace('folder_placeholder', url)
                 slider_temp = slider_temp.replace('number_of_images_placeholder', str(len(os.listdir(folder))))
-
-                html_from_md = html_from_md.replace(markdown(s), slider_temp)
+                print(slider_temp)
+                text = text.replace(s, slider_temp)
 
 
         with open('temp.html', 'w') as file:
-            file.write(html_from_md)
+            file.write(text)
     with open('temp.md', 'r') as file:
 
         text = file.read()

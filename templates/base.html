@@ -1,0 +1,36 @@
+{% block title %}
+{% if title %}
+<title>{{ title }}</title>
+{% else %}
+<title>DE Helper</title>
+{% endif %}
+<link rel="shortcut icon" type="image/x-icon"
+      href="/static/favicon.ico">
+{% endblock %}
+
+
+{% block navbar %}
+{% include '_navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+        integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+<style>
+    body {
+    padding-top: 85px;
+    }
+
+</style>
+<div class="container">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% block app_content %}{% endblock %}
+</div>
+{% endblock %}

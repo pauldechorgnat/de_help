@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block app_content %}
+
+<div class="row">
+    <div class="col-12">
+        <h2>Text input</h2>
+    </div>
+</div>
+<div class="row">
+
+    <div class="col-8">
+
+        <form class="form-group row">
+            <textarea id="text-input" class="form-control" rows="30"></textarea>
+        </form>
+        <div class="form-group row">
+            <button class="btn btn-dark text-white" onclick="generate_summary();">Generate summary</button>
+            <button class="btn btn-dark text-white" onclick="generate_preview();">Generate preview</button>
+<!--            <button class="btn-dark text-white">World</button>-->
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="row">
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab"
+                       aria-controls="nav-home" aria-selected="true">Summary</a>
+                    <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab"
+                       aria-controls="nav-profile" aria-selected="false">Preview</a>
+
+                </div>
+            </nav>
+        </div>
+        <div class="row">
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                    <div id="summary-container"></div>
+                </div>
+                <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                    <div id="preview-summary"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    var socket = io();
+    generate_summary = function() {
+        var content = document.getElementById('text-input').value;
+        console.log(content);
+        var parser = new DOMParser();
+        var htmlDoc = parser.parseFromString(content, 'text/html');
+        socket.emit('generate_summary', {'text': content});
+    }
+    socket.on('summary_generated', function(data){
+    console.log('lol');
+    document.getElementById('summary-container').innerHTML = data['summary'] })
+
+</script>
+
+{% endblock %}

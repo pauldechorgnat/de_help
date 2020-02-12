@@ -3,24 +3,44 @@
 {% block app_content %}
 
 <div class="row">
-    <div class="col-12">
+    <div class="col-1"></div>
+
+    <div class="col-11">
         <h2>Text input</h2>
+
     </div>
 </div>
 <div class="row">
-
-    <div class="col-8">
+    <div class="col-1">
+    </div>
+    <div class="col-5">
 
         <form class="form-group row">
             <textarea id="text-input" class="form-control" rows="30"></textarea>
         </form>
         <div class="form-group row">
-            <button class="btn btn-dark text-white" onclick="generate_summary();">Generate summary</button>
-            <button class="btn btn-dark text-white" onclick="generate_preview();">Generate preview</button>
-<!--            <button class="btn-dark text-white">World</button>-->
+            <div class="col-2">
+                <button class="btn btn-dark text-white" onclick="generate_summary();">Summary</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-dark text-white" onclick="backup();">Backup</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-dark text-white" onclick="generate_preview();">Preview</button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-dark" onclick="add_blockcode();" style="color:white">
+                Codeblock
+                </button>
+            </div>
+            <div class="col-2">
+                <button class="btn btn-dark" onclick="save();" style="color:white">
+                Save
+                </button>
+            </div>
         </div>
     </div>
-    <div class="col-4">
+    <div class="col-5">
         <div class="row">
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
@@ -28,7 +48,6 @@
                        aria-controls="nav-home" aria-selected="true">Summary</a>
                     <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab"
                        aria-controls="nav-profile" aria-selected="false">Preview</a>
-
                 </div>
             </nav>
         </div>
@@ -38,12 +57,13 @@
                     <div id="summary-container"></div>
                 </div>
                 <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                    <div id="preview-summary"></div>
+                    <div id="preview-container"></div>
                 </div>
 
             </div>
         </div>
     </div>
+    <div class="col-1"></div>
 </div>
 <script>
 
@@ -58,6 +78,71 @@
     socket.on('summary_generated', function(data){
     console.log('lol');
     document.getElementById('summary-container').innerHTML = data['summary'] })
+
+    backup = function() {
+        var content = document.getElementById('text-input').value;
+        console.log(content);
+        socket.emit('backup', {'text': content});
+    }
+
+    add_blockcode = function() {
+        var content = document.getElementById('text-input').value;
+        content = content + '\n' + '<blockquote>\n<code class="bash">\n\n</code>\n</blockquote>';
+        document.getElementById('text-input').value = content;
+        document.getElementById('text-input').selectionStart = document.getElementById('text-input').value.length;
+    }
+
+    save = function() {
+        var content = document.getElementById('text-input').value;
+        socket.emit('save', {'text': content});
+    }
+
+    generate_preview = function() {
+        var content = document.getElementById('text-input').value;
+        socket.emit('generate_preview', {'text': content});
+    }
+
+    socket.on('error', function(){ alert('An error has occurred!'); });
+
+    socket.on('saved', function(){ alert('Save successful'); });
+
+    socket.on('preview_generated',
+        function(data) {
+            document.getElementById('preview-container').innerHTML = data['preview'];
+        }
+    )
+
+    function copyText(element) {
+      var range, selection, worked;
+
+      if (document.body.createTextRange) {
+        range = document.body.createTextRange();
+        range.moveToElementText(element);
+        range.select();
+      } else if (window.getSelection) {
+        selection = window.getSelection();
+        range = document.createRange();
+        range.selectNodeContents(element);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      try {
+        document.execCommand('copy');
+        alert('text copied');
+      }
+      catch (err) {
+        alert('unable to copy text');
+      }
+    }
+
+    next_slide = function(element, number_of_images){
+        var image_name = element.src.match('image[0-9]+\\.png')[0];
+        var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
+        var new_image_path = 'image' + new_image_number + '.png';
+        element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
+        return false;
+    }
 
 </script>
 

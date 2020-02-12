@@ -59,6 +59,7 @@ def index():
 
         if len(sliders) > 0:
             for s in sliders:
+                print(s)
                 folder = s.split(' ')[1].replace('\r', '')
                 # print(app.static_folder)
                 url = os.path.join('https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/', folder)

@@ -1,0 +1,865 @@
+<head>
+	<style>
+		table {
+			margin: 20px;
+		}
+
+		body {
+			font-family: Source Sans Pro,sans-serif;
+		}
+		.slider {
+			width:80%;
+			margin-left: auto;
+			margin-right: auto;
+			height:auto;
+		}
+
+		.code {
+			margin: 20px;
+			border-radius: 5px;
+			border-color: #000000;
+		}
+		.alert-info {
+		    margin: 20px;
+			border-radius: 5px;
+			padding: 5px;
+		}
+		.alert-danger {
+		    margin: 20px;
+			border-radius: 5px;
+			padding: 5px;
+		}
+	</style>
+</head>
+<body>
+<div class="container">
+<hr style="border-color:#75DFC1; width:80%;"/>
+<center><h1>Big Data: Velocity</h1></center>
+<hr style="border-color:#75DFC1; width:80%;"/>
+<p>
+In this lesson, we will cover another aspect of Big Data: <b>Velocity</b>: data is created at great speed and must be treated in the least possible time. Therefore, we need specific tools and architectures to deal with this.
+</p>
+<h2>Streaming data</h2>
+<h3>Introduction</h3>
+<p>
+Streaming data is when data is created continuously: it is an unbounded flow of data. Each observation is created at a given moment that we will called <b>event time</b> and processed at the <b>processing time</b>. Of course the <b>event time</b> is important as it is the time at which the observations are created, which means data is supposed to be ordered by this and to reach the system that will process it in the same order.
+</p>
+<p>
+Yet it is not always the case. You can think of text messages: if Alice sends a message a time <i>t</i> to Bob and Carol does the same at <i>t+1</i>. If Alice has bad network connection, then it is possible that the message reaches Bob after Carol. The event times reflects rightly the chronology of the events while the processing time is not the good one.
+</p>
+<p>Streaming data can be generated in a lot of different ways:
+</p>
+<ul>
+<li>Sensors (temperature, pressure, traffic, ...)</li>
+<li>IoT (connected watches, smartphones, ...)</li>
+<li>Financial time series (for High Frequency Trading for example)</li>
+<li>Web metrics (sessions, logs, ... on a website for retargeting purposes)</li>
+<li>CCTV for strange behaviour detection</li>
+<li>Live videos (for autonomous cars or simply live streaming)</li>
+</ul>
+<p>There are some interesting characteristics to look at</p>
+<ul>
+<li><b>Frequency</b>: at which rate is data created ? Is is regular ?</li>
+<li><b>Size</b>: how big is the data created?</li>
+<li><b>Shape</b>: what does data look like? Can it change in anyway?</li>
+</ul>
+<h3>Processing streaming data</h3>
+<p>
+There are different ways to process streaming data:
+</p>
+    <ul>
+<li><b>batch processing</b>: data is stored and then processed at once.</li>
+<li><b>online processing</b>: data is processed as it reaches the system.</li>
+<li><b>mini-batch processing</b>: data is buffered and processed when a limit is reached.</li>
+</ul>
+
+<p>
+Mini-batch processing offers an interesting possibility: as we deal with batches we can have the same syntax as batch processing and when you need both types of computation, this comes in very handy. But you have to find a definition for the buffers: how do you limit the size of the buffer:
+time based mini-batch: data is acquired during a given time window and then processed.
+event based mini-batch: the limit is reached when a given number of observations is reached.
+session based mini-batch: the data is acquired all along the live of a session (think of web browsing sessions for example.
+</p>
+<p>
+Those definitions of mini-batch may raise some issues. In the case of time defined batches, if the data creation frequency skyrockets, your system has to adapt to the rising amount of data. On the other hand, in the case of event based batches, if the data creation frequency drops, we may wait a while before the buffer reaches its limit, reducing the spontaneity of the system at the same time.
+</p>
+
+<h3>Streaming architectures</h3>
+<h4>Components</h4>
+<p>
+To deal with streaming data, we need multiple components.
+</p>
+<p>
+First, we need a system that can receive data and carry it to the other components: this is generally a messaging system and some of the most known are:
+<ul>
+<li>Kafka</li>
+<li>RabbitMQ</li>
+<li>ActiveMQ</li>
+</ul>
+<p>
+Then, we need a streaming data processing engine:
+</p>
+<ul>
+<li>Spark : batch and mini-batch processing</li>
+<li>Flink : batch and online processing</li>
+<li>Storm : online processing </li>
+</ul>
+<p>
+And finally, we need a storage facility which has a good writing speed:
+<ul>
+<li>MongoDB : document oriented DBMS</li>
+<li>Cassandra : column oriented DBMS</li>
+<li>HBase : column oriented DBMS</li>
+</ul>
+<p>
+In the following, we will study Kafka, Spark and HBase.
+</p>
+<h4>Lambda architecture</h4>
+<p>
+We also need specific architectures to combine those components: the most known is the Lambda Architecture. This architecture reaches an interesting tradeoff between velocity and veracity.
+    There are several layers in this architecture:</p>
+<ul>
+<li><b>Batch layer</b> where data is stored for a long time </li>
+<li><b>Speed layer</b> where data is processed very quickly </li>
+<li><b>Serving layer</b> providing views from the batch layer</li>
+</ul>
+
+<p>
+When an observation is reaches the system, it is sent to both the speed layer and the batch layer. In the batch layer it is stored in what is called the master dataset. In the speed layer, it is processed and the output is made available to clients as the streaming view. This means that the client can have a fresh view of the transformation undergone by the data. On the other hand, in the batch layer, we only store data until a given point (time based or observation based). When this point is reached, the whole data undergoes the same transformations as in the speed layer. Then it is written in the serving layer to provide more accurate views (being punctual views or aggregated views). <br>
+The clients can then request very fresh data (streaming views) or more accurate data (batch views) depending on the task.
+</p>
+<p>
+This is interesting because if we go back to our example with the text messages: the speed layer will process the second text message before the delayed one: the streaming view will not be accurate. Yet, if the delay is not too long, the text messages will be treated at the same time in the batch layer, providing an accurate view.
+</p>
+<p>
+But this architecture has some issues of its own: we have to maintain two version of the same code (one for the batch layer and one for the speed layer) and if we work with a streaming engine that do not use both, we will have two different languages, two different syntaxes at least… Moreover, to truly achieve spontaneity in the speed layer, we need two similar threads running  in parallel (when the computation is done in the speed layer and data arrives, we need someone to process it).
+</p>
+<p>
+We will speak about the Kappa architecture, which fixes some issues of the Lambda architecture when we will have introduced Kafka.
+</p>
+<h2>Apache Kafka</h2>
+<h3>Introduction to messaging systems</h3>
+<p>
+The role of messaging systems is take inputs from multiple sources and carry it to multiple clients. When dealing with messaging systems, those sources are called <b>producers</b> and the clients are called <b>consumers</b>. The advantages of having a specific tool to carry data is that it allows multiple consumers to receive data from the same producer (for example if there are multiple tasks to perform on the same data) or, on the contrary, multiple producers sending data to a single consumer (for example multiple temperature sensors whose data are supposed to undergo the same transformation). </p>
+<p>
+Another argument for the use of messaging systems is that it allows the addition or the suppression of consumers and producers without further modification of the current workflow.</p>
+<p>
+    There are different types of messaging systems:</p>
+<ul><li>Asynchronous vs Synchronous</li>
+<li>Queue oriented vs Publish/Subscribe</li>
+</ul>
+<p>
+While synchronous messaging systems requires that the consumers receives the data to send more data, asynchronous messaging systems totally decouple the consumer from the producer: this means that when the consumer crashes, the production of data does not have to stop.</p>
+<p>
+Queue messaging systems receives data and stores it until the data is consumed. This means that when data is received by the messaging system from the producer, the data is stored until the consumer accesses it, processes it and acknowledges the reception. At this point the data is deleted from the messaging system buffer.</p>
+<p>
+Publish/Subscribe messaging systems stores data for a given period of time. When a producer emits data to the messaging system, the data is stored according to a given topic. Consumers are subscribing to those different topics to get the data. Multiple consumers can subscribe to the same topic. For example, we may have temperature sensor and a pressure sensor as producers. They respectively publish data to <i>temperature</i> and <i>pressure</i> topics. When an observation is made, the data is stored into the respective topics. On the consumer side, we have a streaming visualization tool that shows temperature history, a tool that makes temperature forecasting and a visualization tool that shows pressure history. The two first consumer will each subscribe to the <i>temperature</i> topic while the last one will subscribe to the <i>pressure</i> topic. Hence, they will get access to the data from the subscribed topics until this data is deleted from the messaging system.</p>
+<p>To summarize, messaging systems are the middle man that links producers and consumers to simplify data transportation.</p>
+
+<h3>Introduction to Kafka</h3>
+<p><a href="https://kafka.apache.org/">Apache Kafka</a> is an Open Source messaging system created by Linkedin and first released in 2011. It is now part of the Apache Foundation projects.</p>
+
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Kafka.png" style="width:50%"></center>
+
+<p>It relies on the Asynchronous and Publish/Subscribe models. Distributed, it can achieve very high throughput: Linkedin claimed a 2M writes per second throughput.</p>
+
+<h3>Architecture and mechanics</h3>
+<p>Apache Kafka uses a Producer/Brokers/Consumers architecture: data is published to different topics by producers while consumers may subscribe to those topics and retrieve data from it. Brokers are the different daemons running on the different machines of the cluster. There are in charge of replicating and partitioning data.</p>
+<p>The brokers host replicas of the different partitions among a same topic:</p>
+
+<div class="slider">
+    <center>
+        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/kafka_architecture_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
+             onclick="next_slide(this, 4);return false;"/>
+    </center>
+    </div>
+
+
+
+<p>Partitions are of two types: leaders and followers. There is one leader per partition and those leaders are supposed to be evenly distributed among brokers. In the example, there is one leader partition per broker. The replicas of the the leading partition are considered as following partition.</p>
+<p>Assigning leader and follower is done by votes using <a href="https://zookeeper.apache.org/">Apache Zookeeper</a>. We will not go into detail for this tool: the only thing we need is that Zookeeper is used to do administration and maintenance on distributed systems. Here it is used to decide the leading and following partitions. When a broker is down, the partitions that were leader are re-attributed through Zookeeper: we need one leading partition for every partition.</p>
+<h4>Production</h4>
+<p>When a producer publishes an observation into a given topic, it is attributed to a partition. Kafka will then write the observation onto the leading replica of this partition. It is then replicated to the other replicas.</p>
+
+    <div class="slider">
+    <center>
+        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/kafka_production_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
+             onclick="next_slide(this, 9);return false;"/>
+    </center>
+    </div>
+
+
+<p>Note that the data is directly written onto the disk: most of the messaging systems implement a device that caches data so that it is quickly readable. Yet as most of the modern OS already have this cache natively implemented, Kafka relies on the OS for caching data.</p>
+<p>When data reaches Kafka, it is given a sequential id called the offset. This offset is incremented as data reaches Kafka.</p>
+<h4>Consumption</h4>
+<p>In Kafka, clients are grouped into consumers group. We can have multiple consumers or have only one per consumer group.</p>
+<p>A consumer group subscribes to a topic and data is retrieved by group. This means that the different consumers of a same consumer group will not have access to the whole data.</p>
+<p>Partitions will be evenly distributed among member of a consumer group and consumers will read data from the leading partitions. This is very useful when we have complicated processes that do not need the complete data: each of the consumer will do the same job on part of the data.</p>
+
+        <div class="slider">
+    <center>
+        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/kafka_consumption_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
+             onclick="next_slide(this, 3);return false;"/>
+    </center>
+    </div>
+
+<p>For example, if you use Kafka to retrieve data from hundreds of seismic under water beacons. All the data will be sent through the 4G for example to the different brokers. On the consumption side, you can have a consumer group that will have 10 machines, each of them only checking if the seismic activity is not abnormal. You do not need to have every consumer having access to all the data. Moreover you can have a different consumer group that will subscribe to the same topic but that will write data into a data lake for further analysis.</p>
+<p>Data is only accessed through the leading partitions which explains the importance of an even distribution of leading partitions and the major role of Zookeeper to always have a leading partition up and running.</p>
+<h3>Installation</h3>
+<p>First, as usual, we need to decompress the archives</p>
+
+<div class="sh code" id="code-12">
+tar xvf ~/kafka_2.11-2.4.0.tgz
+mv ~/kafka_2.11-2.4.0 ~/kafka
+tar xvf ~/apache-zookeeper-3.5.5-bin.tar.gz
+mv ~/apache-zookeeper-3.5.5-bin ~/zookeeper
+</div>
+<p>
+We need to add the paths to kafka in the <code>.bashrc</code> file with <code>nano ~/.bashrc</code>.
+</p>
+
+<div class="sh code" id="code-13">
+export KAFKA_HOME=/home/ubuntu/kafka
+export PATH=$PATH:$KAFKA_HOME/bin
+export ZOOKEEPER_HOME=/home/ubuntu/zookeeper
+export PATH=$PATH:$ZOOKEEPER_HOME/bin
+</div>
+<p>Do not forget to commit the changes with <code>source ~/.bashrc</code>.</p>
+<p>We just need to configure the Kafka server. To do so, edit the configuration file using <code>nano ~/kafka/congig/server.properties</code>. Check that the line containing information about the listeners is not commented. Look for the line <code>#listeners=PLAINTEXT://:9092</code> and un-comment it. </p>
+
+<p>Before launching the Kafka server, we need to configure and launch Zookeeper:</p>
+<div class="sh code" id="code-14">
+cp $ZOOKEEPER_HOME/conf/zoo_sample.cfg $ZOOKEEPER_HOME/conf/zookeeper_server.conf
+$ZOOKEEPER_HOME/bin/zkServer.sh start $ZOOKEEPER_HOME/conf/zookeeper_server.conf
+</div>
+
+<p>Now we can to launch the server:</p>
+
+<div class="sh code" id="code-15">
+~/kafka/bin/kafka-server-start.sh ~/kafka/config/server.properties
+</div>
+<p>This should print out a lot of information. <b>Do not exit this process</b>. (you can but you will have to run the previous command again.</p>
+
+<p>Open a new console and type in the following lines to see if the server is indeed running:</p>
+
+<div class="sh code" id="code-16">
+jps | grep QuorumPeerMain
+jps | grep Kafka
+</div>
+
+<p>The first line is to see the Zookeeper process running and second is for the Kafka server.</p>
+
+<h3>Practice</h3>
+<p>In this second console, we are going to create a topic to write data to.</p>
+<div class="sh code" id="code-17">
+~/kafka/bin/kafka-topics.sh --create --topic test \
+--zookeeper localhost:2181 \
+ --partitions 1 \
+--replication-factor 1
+</div>
+
+<p>In this command, we have created a topic <code>--create</code>. It is named <code>test</code> thanks to the <code>--topic</code> argument. We have to tell him the address used by Zookeeper (which is the default one here). We also need to tell how many partitions we want on the brokers with the argument <code>--partitions</code>. Finally, we have to tell it how many replicas we want with the argument <code>--replication-factor</code>.</p>
+<h4>Console producer</h4>
+<p>We are going to use a console producer to create data. Launch the server through the following command:</p>
+
+<div class="sh code" id="code-18">
+~/kafka/bin/kafka-console-producer.sh \
+--broker-list localhost:9092 \
+--topic test
+</div>
+
+<p>To launch such a producer, we need to specify the topic to publish in with the argument <code>--topic</code> and the address of the brokers (here we have only one) with the argument <code>--broker-list</code>. The broker is addressed at <code>localhost:9092</code> which is the default value.</p>
+<p>When this command is launched, you should see a prompt that invites you to enter messages. Please enter any message and press enter to publish it to the topic <code>test</code></p>.
+<h4>Console consumers</h4>
+<p>Once you have sent several messages, we can open a console consumer. This consumer will simply print out the messages. Open a new console and type in the following command:</p>
+
+<div class="sh code" id="code-19">
+~/kafka/bin/kafka-console-consumer.sh \
+--bootstrap-server localhost:9092 \
+--topic test \
+--from-beginning
+</div>
+<p>We find similar arguments as with the console producer: the address of the broker and   the topic. There is one more argument but we will come back to this one.</p>
+<p>You should see all the messages you have written appearing into the consumer console. You can go back to the producer console and send some new lines. They will appear as soon as they are sent in the consumer console.</p>
+<p>Now you can open a new console and launch the previous command without the argument <code>--from-beginning</code>. </p>
+<p>You should not see any message in this new console until you write one in the producer console. In this case, we choose to ignore past messages and only focus on the new messages. But if you close the console and relaunch it with the argument this time, they will appear. This shows that data is indeed stored and that we can retrieve it even if it has already been consumed by another consumer group (in this case, console consumers are considered as single consumer groups).</p>
+
+<h4>Kafka with Python</h4>
+<p>Python is very handy in Data Engineering as it can be used to link different tools easily. There is multiple Kafka Python clients but we will use this <a href="https://pypi.org/project/kafka-python/">one</a>. Install it through <code>pip</code>.
+
+<div class="sh code" id="code-20">
+pip3 install kafka-python
+</div>
+<p>
+If you open a script file with <code>nano ~/code/python_producer.py</code>, you can create a producer with the following code.
+</p>
+<div class="python code" id="code-1">
+import time
+from kafka import KafkaProducer
+kafka_producer = KafkaProducer(bootstrap_servers='localhost:9092')
+
+while True:
+    time.sleep(5)
+    kafka_producer.send(topic='test', value='a new message sent at {}'.format(time.asctime()).encode('utf-8'))
+
+</div>
+<p>Exit the file and launch it:</p>
+
+<div class="sh code" id="code-21">
+python3 ~/code/python_producer.py
+</div>
+
+<p>Now you can open a console consumer in another terminal with the command used before.<br>You should see the messages sent by Python.</p>
+
+<p>If we take a look at the code, it is pretty straight forward: we need to instantiate an object of the class <code>KafkaProducer</code> with the list of brokers' address. Then to send messages, we only need to use the <code>send</code> method. </p>
+
+<p>To address the consumption though Python, we can use the <code>KafkaConsumer</code> class.<p>
+
+<p>Open a file with <code>nano ~/code/python_consumer.py</code> and paste the following lines into it: </p>
+
+<div class="python code" id="code-2">
+from kafka import KafkaConsumer
+
+kafka_consumer = KafkaConsumer('test', bootstrap_servers='localhost:9092')
+</div>
+
+<p>To instantiate the class, we have to indicate the topic and the location of the servers. To get data, we can use the <code>poll</code> method. By specifying the argument <code>timeout_ms</code>, the consumer will wait for data to be available if there is not.
+</p>
+<div class="python code" id="code-3">
+# getting all messages within the last second
+kafka_consumer.poll(timeout_ms=1000)
+</div>
+<p>In this part, we have seen how Kafka works and how to create a topic, publish and consume messages through Kafka.</p>
+
+<h2>Apache Spark</h2>
+<h3>Introduction</h3>
+<p>Apache Spark is a distributed computing engine developed at the University of Berkeley. It was first released in 2009 and became an Open Source project in 2010.</p>
+
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Spark.png" style="width:50%"></center>
+
+<p>It is coded in Scala, a functional programming language designed for parallel computing and map reduce operations. It also features APIs in Java (Scala is very similar to Java on many aspects), Python (Pyspark) and R (SparkR). As features are developed in Scala, it is not rare to see features that are available through Scala and Java but not through Python or R.</p>
+<h4>Differences with Hadoop</h4>
+<p>We often ear comparison between Hadoop and Spark but they are very different.</p>
+<p>First and most important, while Hadoop is at the same time a distributed file system (HDFS), a resource manager (YARN) and a coding API (Hadoop Mapreduce), Spark is only a computing engine and can be its own resource manager. Spark does not deal with storage at all.</p>
+<p>Moreover, Spark has some very handy high level libraries to deal with a lot of different types of data. We will introduce them a bit later but Hadoop Mapreduce is much less abstracted than Spark libraries.</p>
+<p>Finally, the main difference that explains the success of Spark is its speed. In 2014, a team tasked a Spark cluster and an Hadoop cluster to sort 100 Tb of data. It turned out that the Spark cluster sorted the data 3 times faster and with a cluster 10 times smaller than its competitor.<br>
+So Spark is much faster but why is that ? As a distributed computing engine relying on MapReduce, it does basically the same operations. Moreover, Scala works on the same principle as Java, with JVM so the difference is not in the used language. <br>
+The difference is explained during the <b>shuffle</b> step: while native Hadoop writes key-value pairs on the disk, Spark writes it on memory. Writing into and reading from memory takes a lot less time than with disk.<br>
+But bear in mind that memory is also more expensive than disk: this means that a Spark cluster will likely cost more than a Hadoop cluster: if Spark was better at everything computation-wise, nobody would use Hadoop anymore...</p>
+<p>There is also the ability from Spark to optimize operations, to which we will come back.</p>
+
+<h4>Spark components</h4>
+    <p>As explained before, Spark implements some interesting libraries:</p>
+<ul><li><b>SparkSQL</b>: a library that uses the optimization of SQL engine to perform operations on tabular data.</li>
+<li><b>SparkML</b>: a library that allows to perform training, testing and deployment of Machine Learning algorithms on distributed clusters.</li>
+<li><b>SparkStreaming</b>: a library that allows to perform a lot of different operations on streaming data.</li>
+<li><b>GraphX</b>: a library that allows to perform distributed operations on graph data.</li>
+</ul>
+<p>Finally, the most important element of Spark is its core API: Spark Core. It deals with:</p>
+<ul>
+<li>I/O operations</li>
+<li>Task dispatching</li>
+<li>Job scheduling (if Spark is used as a Resource Manager)</li>
+<li>Fault recovery</li>
+</ul>
+<h3>Data Structures and Operations</h3>
+<h4>Data Structures</h4>
+<p>In Spark, there are several data structures that can be used. The core and most low level data structure is the RDD for <b>Resilient Distributed Datasets</b>. They are immutable, meaning that you cannot change a RDD but you can only create a new RDD that will contain the changes. It is partitiionned and distributed among different machines. RDD are not structured: we can see them as lists of lists. Each line can contain different information. Finally, the evaluation in Spark being lazy, the changes are not run until needed.</p>
+<p>RDD are fine to deal with unstructured data but this also means that when data is structured, there is no check for data compliance: let's imagine you have a dataset containing information about customers. If you want to compute their average age, you will have to load all the data into the memory and then to discard data that is not interesting. </p>
+<p><b>DataFrame</b> are another type of data structure. It relies on the RDD at core but can be seen as a tabular data structure. Therefore, it has to have a fixed schema. This is useful to perform operations only on liked data. Yet it does not implement a data type safety.</p>
+<p><b>DataSet</b> is the latest and most high level data structure implemented by Spark. It is basically a DataFrame with type safety: data is checked before operations are performed, which can save a lot of time in debugging.</p>
+<p>If we go back to our example of the average age of our costumers, the DataFrame allows to load only the age column into memory while DataSet also checks that the data is of the specified type: integers.</p>
+<h4>Operations</h4>
+<p>To understand Spark optimization process, we have to define the different type of operations that you can perform on data.</p>
+<p>Operations are divided into <b>Transformations</b> and <b>Actions</b> in Spark parlance.<br>
+Transformations are operations that will create a new RDD (or DataFrame, or Dataset). On the other hand, Actions are operations that requires the executions of transformations: for example, if you want to print the results of a Spark job or write them.</p>
+<p>Transformations are themselves divided into two categories:</p>
+<ul>
+    <li>narrow: transformations that can be done on each partition separately (map, filter, union, sample, ...)</li>
+<li>wide: transformations that can be done only during a reduce step (reduce, groupby, intersection, distinct, ...)</li>
+</ul>
+
+<h4>Optimization</h4>
+<p>One important aspect of Spark is its optimization process. We have said before that the evaluation is lazy: operations are not performed until we need to.</p>
+<p>In fact, when we are coding a Spark application, we add operations to a Directed Acyclic Graph (DAG). Operations are saved and when we ask for an Action rather than a Transformation, the DAG is optimized and then computed: for example, some intermediary RDD can be persisted in the memory or on the disk because they are to be used multiple times. </p>
+
+<p>In Spark, when we run an application, we run multiple Jobs, each one being the result of transformations and an action. Jobs are divided into stages which are individual unit of works. Stages are performed on the different partitions: a stage broken down to a partition is a task. Tasks are handled by the TaskScheduler, a daemon that organize work in Spark.</p>
+
+<h3>Inner Mechanisms</h3>
+<p>When a Spark application is launched, a daemon called the ApplicationMaster is launched. This daemon will then be in charge of sending requirements and code to the other daemons.<br>
+The ApplicationMaster triggers the execution of the Driver Program. The Driver Program is in charge of the optimization process through the construction of the DAG. It also creates the SparkContext that will interact with the resource manager: it asks the resource manager for resources and the resource manager will respond by launching Executors on the different nodes. Executors are very similar to the containers in YARN: they operate JVM but also have space dedicated to memory and disk.</p>
+<div class="slider">
+    <center>
+        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/spark_architecture_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
+             onclick="next_slide(this, 6);return false;"/>
+    </center>
+    </div>
+
+<p>Spark can work into two deployment modes:</p>
+<ul>
+<li>cluster mode: the ApplicationMaster is launched on a node of the cluster which will also host the Driver Program.</li>
+<li>client mode: the ApplicationMaster is launched remotely, on a device outside the cluster.</li>
+</ul>
+<p>
+Cluster mode is advised when the client connection to the cluster is bad and that we prefer a direct connection to the cluster. On the other hand, client mode offers more oversight.</p>
+<p>Finally, Spark can supports different resource or cluster manager. It can works with YARN, Apache Mesos, Kubernetes but it can also be its own cluster manager, when Spark is in Stand Alone mode.
+</p>
+<h3>Installation</h3>
+<p>First we need to decompress the archive.</p>
+
+<div class="sh code" id="code-22">
+tar -xvf ~/spark-2.4.5-bin-hadoop2.7.tgz
+mv ~/spark-2.4.5-bin-hadoop2.7 ~/spark
+</div>
+<p>We need to add Spark to the paths with <code>nano ~/.bashrc</code> and by pasting the following lines. </p>
+
+<div class="sh code" id="code-23">
+export SPARK_HOME=/home/ubuntu/spark
+export PATH=$PATH:$SPARK_HOME/bin
+export PYSPARK_PYTHON=python3
+export PYSPARK_DRIVER_PYTHON=ipython3
+</div>
+<p>Save, close the file and commit the changes through <code>source ~/.bashrc</code>.</p>
+
+<p>We only need to start the Master.</p>
+
+<div class="sh code" id="code-24">
+$SPARK_HOME/sbin/start-master.sh
+</div>
+
+<p>And the workers</p>
+
+<div class="sh code" id="code-25">
+$SPARK_HOME/sbin/start-slave.sh spark://localhost:8080
+</div>
+
+<p>Note that we have to specify where the master is.</p>
+<p>Check that both are up: </p>
+
+<div class="sh code" id="code-26">
+jps | grep Master
+jps | grep Worker
+</div>
+
+<p>You can also connect to the ports <code>8080</code> and <code>4040</code> to follow the execution of Spark Applications.</p>
+
+<h3>Practice</h3>
+<h4>Batch processing</h4>
+
+<p class="alert-danger">
+In this lesson, we will not come back on how to deal with batch processing in Spark: the lesson <b>141</b> deals with it.</p>
+
+<h4>Spark streaming</h4>
+<p>In this part, we will study how to deal with streaming data using <code>pyspark</code>: Scala is a difficult language that would require a whole course so it is simpler to use Python.</p>
+
+<h5>DStreams</h5>
+<p>Spark does not do online stream processing but uses mini-batch processing. The basic data structure is called a <b>DStream</b> and is  delimited by a time window. DStreams are similar to RDD, implements the same methods but acts if it had no limits.</p>
+
+<div class="slider">
+    <center>
+        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/spark_dstream_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
+             onclick="next_slide(this, 10);return false;"/>
+    </center>
+    </div>
+
+<p>First we will generate data with a Python script. In this example, we will simulate tweets emission. To do so, we will first create a Kafka topic to publish those tweets (make sure that a Kafka server is running).</p>
+
+<div class="sh code" id="code-27">
+~/kafka/bin/kafka-topics.sh --create --topic twitter \
+--zookeeper localhost:2181 \
+ --partitions 1 \
+--replication-factor 1
+</div>
+<p>Then to launch the emission, type in the following command.</p>
+<div class="sh code" id="code-28">
+python3 ~/code/tweets_producer.py
+</div>
+
+<p>Check that tweets are indeed published to the <code>twitter</code> topic by opening a consumer console.</p>
+
+<p>Then open a file with the following command: <code>nano ~/code/spark_streaming_tweets.py</code>. In this file, we will show simple transformations on the emitted tweets.</p>
+
+<p>First, to connect to the Kafka topic, we will need the following lines: </p>
+
+<div class="python code" id="code-4">
+from pyspark import SparkContext
+spark_context = SparkContext.getOrCreate()
+spark_context.setLogLevel("WARN")
+from pyspark.streaming import StreamingContext
+streaming_context = StreamingContext(spark_context, batchDuration=10)
+</div>
+
+<p>SparkContext is used to connect to the Resource Manager. The <code>batchDuration</code> argument is used to define the time limit for the DStreams in seconds. There are clients that allows to connect easily Spark to Kafka in a streaming context:</p>
+
+<div class="python code" id="code-5">
+from pyspark.streaming.kafka import KafkaUtils
+kafka_stream = KafkaUtils.createDirectStream(ssc=streaming_context, topics=['twitter'],
+kafkaParams={'metadata.broker.list': 'localhost:9092'})
+</div>
+
+<p>You can see that we need to specify the list of brokers and the topics to connect to. <br>For now, we will only print what we receive. Add the following lines:</p>
+
+<div class="python code" id="code-6">
+kafka_stream.pprint()
+streaming_context.start()  # starts streaming
+streaming_context.awaitTermination()  # wait for the computation to end
+</div>
+
+<p>Close and save the file.<br> To run it, we will use a special syntax:</p>
+
+<div class="sh code" id="code-29">
+spark-submit --jars ~/code/spark-streaming.jar ~/code/spark_streaming_tweets.py
+</div>
+
+<p>The jar that we specify is a file used to link Kafka to Spark.<br>
+Once this is launched you should see the content of the DStream being printed out in the terminal.<br>
+This is very basic but we will add other instructions. <br> Reopen the file and paste the following lines before the <code>.pprint()</code> lines.</p>
+
+<div class="python code" id="code-7">
+import ast
+kafka_stream = kafka_stream.map(ast.liter_eval).map(lambda x: x['user']['screen_name'])
+kafka_stream.pprint()
+</div>
+
+<p>As you have seen in the batch processing part, we can use a <code>map</code> method to apply a function line by line. At the beginning, our stream is a list of strings that represent dictionaries, eg the tweets info.<br>
+With the <code>ast.liter_eval</code> we can change a string that contains a dictionary into a dictionary. Then we can take only the user information for each tweet.<br>
+Exit, save and launch the file to see the results.</p>
+<p>What makes Pyspark interesting to use is that the differences between stream processing and batch processing are very light: we have to implement a stream context but that is basically all. Most of the methods of RDD are usable on DStreams: <code>flatmap</code>, <code>map</code>, <code>reduceByKey</code>, ...</p>
+<p>The major difference is on the <code>take</code> and <code>collect</code> methods. You cannot use them on their own but you need to use the <code>foreachrdd</code>. <br> And to save data onto HDFS, you can use: <code>saveAsTextFiles</code> and provide a name for the file you want your data in. </p>
+<p>
+For example, the following code, will take the tweets and count how many are sent during the time window and save the results into HDFS.</p>
+<div class="python code" id="code-8">
+from pyspark.streaming.kafka import KafkaUtils
+from pyspark import SparkContext
+spark_context = SparkContext.getOrCreate()
+spark_context.setLogLevel("WARN")
+from pyspark.streaming import StreamingContext
+streaming_context = StreamingContext(spark_context, batchDuration=10)
+kafka_stream = KafkaUtils.createDirectStream(ssc=streaming_context, topics=['twitter'],
+kafkaParams={'metadata.broker.list': 'localhost:9092'})
+
+# emitting 1 for each line
+stream1 = kafka_stream.map(lambda x: 1)
+# creating a tuple to make the reduceByKey
+stream2 = stream1.map(lambda x: ('key', x))
+# reducing on the key, eg the first member of the tuples
+stream3 = stream2.reduceByKey(lambda x, y: x + y)
+#saving data
+stream3.saveAsTextFiles('/twitter/count')
+
+streaming_context.start()  # starts streaming
+streaming_context.awaitTermination()  # wait for the computation to end
+</div>
+
+<p>You can launch it to see the results into HDSF</p>
+<h4>Exercises</h4>
+<p>There is a lot of place to play around with those tweets. Here we want you to do two things:</p>
+<ul><li>make a wordcount every 10 seconds of the words that were emitted.</li>
+<li>give the number of tweets carrying a positive sentiment and the number of tweets carrying a negative sentiment.</li>
+</ul>
+<p>
+There are a lot of ways to do this, but we advise to use already known techniques, such as tokenizers that are present in the package <code>nltk</code> and to use the <a href="https://pypi.org/project/vaderSentiment/">VaderSentiment </a> algorithm to perform those calculus.</p>
+
+<h2>HBase</h2>
+<h3>Introduction</h3>
+<p>HBase is a distributed column oriented database management system similar to BigTable and Cassandra. It was first released in 2008 and has become a project of the Apache Foundation since then. One of the interesting aspect of HBase is that it relies heavily on HDFS for distribution.</p>
+
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/HBase.png" style="width:50%"></center>
+
+<p>But why talk about a DBMS in a lesson about stream processing?<br>Well that are two major aspect: first, regarding storage, we have only looked to document oriented and relational DBMS. Column oriented is a great addition to this portfolio. Secondly, reads and writes are quick in HBase which is very important in a streaming architecture. </p>
+
+<h3>Column Oriented DataBase</h3>
+<p>Column Oriented DataBases are a type of NoSQL Databases. They seem similar to RDBMS as they can be seen as tabular data in a first approach. Yet they rely on key-value pairs and the schema is much more flexible.<br>
+Moreover they provide the advantage of storing data by column and not by row: when you have a lot of attributes for a single observation, this speeds up computation.</p>
+
+<p>In the following figure, you can see that columns are grouped in column families and indexed by rows. The number of columns per column family is extensible while the number of column family is more difficult to change. Columns are not typed which means that we can have multiple types in the same column.<br>
+In reality, each cell is represented by a key-value pair: the key is the row index and the value is the value contained by the cell: Column oriented databases are a compromise between relational and document oriented databases.</p>
+
+<h3>HBase inner mechanisms</h3>
+<p>Hbase has three major components.</p>
+<ul>
+<li><b>HMasters</b>: They are the daemons in charge of maintenance and attribution. They check if the HRegion Servers are up and running and reattribute their task if they are not. They are hosted on master nodes.</li>
+<li><b>HRegion Server</b>: HRegion Servers are in charge of organizing writing and reading in the HRegions.</li>
+<li><b>HRegion</b>: they are the daemons that deal with the storing of data. </li>
+</ul>
+
+<p>There can be multiple HMasters but only one is active at the same time. The others are listening the active HMaster heartbeat through Zookeeper and if the active HMaster crashes, Zookeeper runs an election to select an inactive HMaster to take its place. Zookeeper is also in charge of providing the heartbeat of the HRegion Servers to the active HMaster.</p>
+
+<p>When data is to be written into HBase, it is redirected to a HRegion Server in function of the load balance. In this HRegion Server, the data is written as is in the <b>Write Ahead Log</b>. This write is done directly on disk. Writing on the disk may seem slow but data is of course cached when reaching the server. Writing on the disk allows to recover data in case the machine crashes.<br>
+Data is also copied in <b>MemStores</b>. MemStores are partition of the memory of the server. There is one MemStore per column family. When the limit of one MemStore is reached, all the data in memory on this HRegion Server is written into HFiles in HDFS: HBase does not really deal with partition and replication. It is HDFS that does all the work. </p>
+
+<h3>Installation</h3>
+
+<p>First, as usual, we decompress the archive and rename the folder:</p>
+
+<div class="sh code" id="code-30">
+tar xvf ~/hbase-2.1.8-bin.tar.gz
+mv ~/hbase-2.1.8 ~/hbase
+</div>
+
+<p>Then we modify the paths in the file <code>~/.bashrc</code>:</p>
+
+<div class="sh code" id="code-31">
+export HBASE_HOME=/home/ubuntu/hbase
+export PATH=$PATH:$HBASE_HOME/bin
+</div>
+
+<p>Save and close the file. Do not forget to commit the changes with <code>source ~/.bashrc</code>.</p>
+
+<p>Next we need to edit the configuration file. We need to specify:</p>
+<ul><li>if the cluster is distributed</li>
+<li>where Hadoop namenode is running</li>
+<li>where Zookeeper is running<li>
+</ul>
+<p>Open the file with <code>nano</code>: <code>nano $HBASE_HOME/conf/hbase-site.xml</code> and paste those lines inside the configuration tags: </p>
+
+<div class="xml code" id="code-37">
+<property>
+   <name>hbase.cluster.distributed</name>
+   <value>true</value>
+</property>
+<property>
+   <name>hbase.rootdir</name>
+   <value>hdfs://localhost:9000/hbase</value>
+</property>
+<property>
+<name>hbase.zookeeper.property.clientPort</name>
+   <value>2000</value>
+</property>
+</div>
+
+<p>Finally, we need to edit the file <code>$HBASE_HOME/conf/hbase-env.sh</code> by pasting the following line at the end: </p>
+
+<div class="sh code" id="code-32">
+export JAVA_HOME=/usr
+</div>
+
+<p>To launch HBase, you have to make sure that Hadoop is up and running (you can use <code>jps</code>) and launch the following command: </p>
+
+<div class="sh code" id="code-33">
+$HBASE_HOME/bin/start-hbase.sh
+</div>
+
+<p> Once this is launched, you can check if HBase is running by doing: </p>
+<div class="sh code" id="code-34">
+jps | grep HMaster
+jps | grep HRegionServer
+jps | grep HQuorumPeer
+</div>
+
+<h3>Practice</h3>
+<h4>HBase shell</h4>
+<p>To connect to HBase CLI, we can use <code>hbase shell</code>.  Once connected you can list all the existing tables, here there should be none, by using the <code>list</code>.
+</p>
+
+<p>First we will create a table named <code>test_table</code>. To do so, type in the following line: </p>
+<div class="hbase code" id="code-38">
+create 'test_table', 'column_family1'
+</div>
+
+<p>This will create a table will one column family named <code>column_family1</code>. If we wanted to create multiple column families, we could have used: <code>create 'test_table', 'column_family1', 'column_family2', ...</code>.
+</p>
+
+<p>To add values to a table, we can use the <code>put</code> keyword and add the following specifications.</p>
+<ul><li>the name of the table</li>
+<li>the id of the row</li>
+<li>the name of the column family</li>
+<li>the name of the column</li>
+<li>the value</li>
+</ul>
+
+<p>For example, to put the value <code>'hello'</code> at the row id <code>row_id1</code> in the table <code>test_table</code>, in the column <code>column1</code> of the column family <code>column_family1</code>, we can do the following:</p>
+
+<div class="hbase code" id="code-39">
+put 'test_table', 'row_id1', 'column_family1:column1', 'hello'
+</div>
+
+<p>Note that the column does not need to exist previously.</p>
+<p>You can try some other things: </p>
+<ul><li><code>put 'test_table', 'row_id2', 'column_family1:column1', 'world'</code>: adding a new line</li>
+<li><code>put 'test_table', 'row_id1', 'column_family1:column2', 'bonjour'</code>: adding a new column</li>
+<li><code>put 'test_table', 'row_id2', 'column_family1:column1', 'le monde'</code>: modifying the value of a cell</li>
+</ul>
+<p>There is something a bit subtle about modifying the value of a cell: you can add specifications to the table so that it keeps different versions of the same value: in this case, the present version would be changed to the new value but the previous value would be kept had we put those parameters.</p>
+<p>But you cannot add column family so easily: remember that there are daemons for each column family that are in charge of keeping data into the memory until it is flushed in HDFS: you can add a column family by using <code>alter 'test_table', 'column_family2'
+</code>.</p>
+
+<p>Commands to get data are very simple. We use the <code>get</code> keyword and specify what we want</p>
+<div class="hbase code" id="code-40">
+# to get the row row_id1
+get 'test_table', 'row_id1'
+# to get only the column family 'column_family1' of the row 'row_id1'
+get 'test_table', 'row_id1', 'column_family1'
+# to get only the column 'column1' of the column family 'column_family1' of the row 'row_id1'
+get 'test_table', 'row_id1', 'column_family1:column1'
+</div>
+
+<p>To delete data, we can delete:</p>
+<ul>
+<li>per cell: <code>delete 'test_table' 'row_id1' 'column_family2:column1'</code></li>
+<li>per row: <code>deleteall 'test_table', 'row_id2'</code></li>
+</ul>
+<p>Finally to drop a table, we need to disable it: <code>disable 'test_table'</code> and then to drop it: <code>drop 'test_table'</code>.</p>
+
+<h4>Python client</h4>
+<p>Python has a package named <b>happybase</b> that is used to perform operations on HBase. It uses a ThriftServer to access data so we have to launch it.<br>
+In a new console, launch the following command:</p>
+
+<div class="sh code" id="code-35">
+hbase thrift start -b localhost -p 9090
+</div>
+
+<p>To perform operations via happybase, we need to implement a connector:</p>
+
+<div class="python code" id="code-9">
+from happybase import Connection
+hbase_connection = Connection(host='localhost', port=9090, autoconnect=True)
+</div>
+
+<p>We can do the same operations as before:</p>
+
+<div class="python code" id="code-10">
+# list the tables
+list_of_tables = hbase_connection.tables()
+# create a table
+hbase_connection.create_table(name='table_name',
+families={'column_family1': dict(), 'cf2': dict()})
+# connect to a specific table
+table = hbase_connection.table(name='table_name')
+# creating data into the table
+table.put(row='id1',
+data={'column_family1:c1':'value1'})
+# close the connection
+hbase_connection.close()
+</div>
+
+<p>We will not go any further on HBase as they are a lot of different commands and that all are not necessarily very interesting. If you want to explore other possibilities, you can check this <a href="https://happybase.readthedocs.io/en/latest/">link</a>.
+</p>
+<h2>Exercise</h2>
+<p>In this part, we will try to create a pipeline that gets data into HBase in real time.</p>
+
+<p>Here this data will be temperature sensors from 10 different sensors. Data will look like:</p>
+
+<div class="json code" id="code-41">
+{
+    "temperature": 25,
+    "station_id": 1,
+    "timestamp": 1581518005
+}
+</div>
+
+<p>They will be emitted at a rythm of approximately one observation per 5 seconds per station. They will be published in the topic <code>temperature</code> (you have to create it).</p>
+
+<p>Through a pyspark code, you should take this data every 10 seconds, and check that it does not go over 27.5 or under 22.5. You will also need to compute the average temperature over the stations at each observation </p>
+<p>To do so, you will have to parse the data into dictionaries, reduce them to take the mean at a given timestamp and add a flag if the temperature is too high.</p>
+<p>Once this is done, you have to put the data into a HBase table: this table should be called <code>temperature</code>. Each row should be identified by the timestamp at which an observation was taken. There should be two column families. The first one, named data, should contain the average temperature over the stations. The second one named anomalies should contain an error data on an out-of-bound temperature: the temperature and the id of the station for this anomaly.</p>
+<p>Finally, the latest average temperature should be duplicated into a second row whose id is <code>latest</code> so that a client which would request the temperature should be able to request this row with only the id of the row.</p>
+<p>To store data from a DStream to HBase, you can use the <code>foreachrdd</code> and a function similar to this: </p>
+<div class="python code" id="code-11">
+import datetime
+def put_data_into_hbase(rdd):
+    connection = Connection(host='localhost', port=9090, autoconnect=True)
+    table = connection.table(name='temperature')
+    results = rdd.collect()
+
+    for index, row in enumerate(results):
+        table.put(row=str(datetime.datetime.now()), data={'data:avg_temp': str(row[0])})
+    connection.close()
+</div>
+
+<p>To launch the script that produces data, you have to create the topic, make sure that the Kafka server is up and running and launch the script with</p>
+
+<div class="sh code" id="code-36">
+python3 ~/code/temperature_generator.py
+</div>
+
+<p>Good Luck!</p>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+			<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+			integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+			crossorigin="anonymous"></script>
+			<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+			integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+			crossorigin="anonymous"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js" type="text/javascript"
+			charset="utf-8"></script>
+<script>
+	change_code = function(language='python'){
+		var regular_expression = new RegExp(/^(\t)+/);
+		var divs = document.getElementsByClassName(language);
+		for (var i=0; i<divs.length; i++){
+
+            var element = divs[i];
+            var lines = element.innerHTML.split('\n');
+            var nb_lines = lines.length;
+            text = element.innerHTML;
+
+            element.style.height = ((nb_lines) * 16) + 'px';
+            var editor = ace.edit(divs[i].id);
+            text = text.split('&amp;').join('&');
+            text = text.split('&gt;').join('>');
+            text = text.split('&lt;').join('<');
+            editor.setValue(text.substring(1), -1);
+            editor.setTheme("ace/theme/monokai");
+            editor.session.setMode("ace/mode/" + language);
+            // editor.session.highlight()
+            editor.setFontSize('16px');
+            // editor.session.indentRows(startRow=0, endRow=nb_lines, indentString='\t');
+
+         	// beautify.beautify(editor.session);
+         	editor.setReadOnly(true);
+         }
+     }
+     var languages = ['python', 'sql', 'sh', 'json', 'dockerfile', 'yaml', 'xml', 'pig'];
+     for (var l=0; l<languages.length; l++){
+     	change_code(languages[l]);
+     }
+
+
+
+
+ </script>
+ <script>
+ 	next_slide = function(element, number_of_images){
+ 		var image_name = element.src.match('image[0-9]+\\.png')[0];
+ 		var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
+ 		var new_image_path = 'image' + new_image_number + '.png';
+ 		element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
+ 		return false;
+ 	}
+
+
+
+ </script>
+ <script>
+ 	function copyText(element) {
+ 		var range, selection, worked;
+
+ 		if (document.body.createTextRange) {
+ 			range = document.body.createTextRange();
+ 			range.moveToElementText(element);
+ 			range.select();
+ 		} else if (window.getSelection) {
+ 			selection = window.getSelection();
+ 			range = document.createRange();
+ 			range.selectNodeContents(element);
+ 			selection.removeAllRanges();
+ 			selection.addRange(range);
+ 		}
+
+ 		try {
+ 			document.execCommand('copy');
+ 			alert('text copied');
+ 		}
+ 		catch (err) {
+ 			alert('unable to copy text');
+ 		}
+ 	}
+
+
+
+ </script>
+
+</div>
+</body>

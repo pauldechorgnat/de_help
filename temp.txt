@@ -1,0 +1,998 @@
+<head>
+    <style>
+    table {
+        margin: 20px;
+    }
+
+    body {
+        font-family: Source Sans Pro,sans-serif;
+        }
+    .slider {
+        width:80%;
+        margin-left: auto;
+        margin-right: auto;
+        height:auto;
+    }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+	<hr style="border-width: 2px ; border-color: #75dfc1">
+<center><h1>Bash</h1></center>
+<hr style="border-width: 2px ; border-color: #75dfc1">
+
+
+In this lesson, we will see the basics of <code>Bash</code> and <b>Linux</b> file manipulation.
+
+<h2>A short history of Linux</h2>
+
+Back in the 80s, Richard Stallman, AI ressearcher at MIT, started developing GNU, a free and open OS based on Unix. At the same, Linus Torwalds, a Finnish student started developing Linux: eventually, the two projects merged into GNU/Linux, mostly known as Linux.
+
+Over this core code, some distributions were developped:
+<ul>
+	<li>Debian</li>
+	<li>Red Hat</li>
+	<li>...</li>
+</ul>
+
+Over these distributions, distributions of distributions are created. For example, the most known and used distributions over Debian is <b>Ubuntu</b> which we will use during this course. Due to its large community of developers and users, Ubuntu is easy to use and frequently updated and patched.
+
+
+<h2>Architecture of the system</h2>
+
+The files in the system are distributed in a tree-like structure.
+
+For example, if I have a folder <code>folder1</code> containing two subfolders <code>subfolder1</code> and <code>subfolder2</code>, the structure is the following:
+
+	<div>
+		folder1
+			subfolder1
+			subfolder2
+	</div>
+
+
+And if the <code>subfolder1</code> contains files <code>file1</code> and <code>file2</code>, the structure is:
+
+	<div>
+		folder1<br>
+		- subfolder1<br>
+		- - file1<br>
+		- - file2<br>
+		- subfolder2<br>
+	</div>
+
+
+In particular, the architecture of a Linux system starts with the root directory: <code>/</code>.
+In this directory, we find several subfolders:
+<ul>
+	<li><code>/bin</code>: contains essential user binaries (bash shell, files manipulation, ...).</li>
+	<li><code>/boot</code>: contains files required to boot the system.</li>
+	<li><code>/cdrom</code>: temporary location for CD-ROM.</li>
+	<li><code>/dev</code>: contains special files representing devies (console, stdout, ...)</li>
+	<li><code>/etc</code>: contains system configuration files.</li>
+	<li><code>/home</code>: contains user folders</li>
+	<li><code>/lib</code>: contains libraries used to run <code>/bin</code> and <code>/sbin</code> binaries</li>
+	<li><code>/lost+found</code>: contains corrupted files in a case of system failure.</li>
+	<li><code>/media</code>: contains removable folders for each removable device (USB keys, ...).</li>
+	<li><code>/mnt</code>: folder containing temporary mounted file systems.</li>
+	<li><code>/opt</code>: contains some softwares that do not respect the standard file hierarchy.</li>
+	<li><code>/proc</code>: contains system information.</li>
+	<li><code>/root</code>: home directory for the <code>root</code> user</li>
+	<li><code>/run</code>: contains programs temporary files that should not be deleted.</li>
+	<li><code>/sbin</code>: contains system binaries used by the root user.</li>
+	<li><code>/srv</code>: contains data for services provided by the system (website files for a web server, ...).</li>
+	<li><code>/tmp</code>: contains deletable temporary files that are generally deleted when system restarts.</li>
+	<li><code>/usr</code>: contains applications and files for user. This directory is subdivised into <code>/bin</code>, <code>/lib</code>... which serve the same purpose as in <code>/</code> but at user level.</code></li>
+	<li><code>/var</code>: contains log files.</li>
+</ul>
+
+<h2>First commands</h2>
+
+When you open a terminal, or a console, you see different things by default:
+<ul>
+	<li><code>username</code>: the name of the user that you currently are.</li>
+	<li><code>@</code>: a separator introducing the name of the machine.</li>
+	<li><code>machine_name</code>: the name of the machine that you are using.</li>
+	<li><code>:</code>: a separator introducing the path where you are at.</li>
+	<li><code>~</code>: the path where you are at on the machine.</li>
+	<li><code>$</code>: a separator indicating the rights of the user</li>
+</ul>
+
+If the user is the superuser, e.g. the <code>root</code> user, then the <code>$</code> is replaced by a <code>#</code>.
+
+By default, for a regular user, the terminal opens at <code>/home/username</code> which is simplified as <code>~</code> for the user <code>username</code>.
+
+To check where you are, you can use the command <code>pwd</code> (short for <code>print working directory</code>):
+
+
+	<div class="sh">
+	pwd
+	</div>
+
+
+This should return:
+
+
+	<div class="sh">
+	/home/ubuntu
+	</div>
+
+
+To return the content of the folder you are in, you can us <code>ls</code>:
+
+
+
+	<div class="sh">
+	ls
+	</div>
+
+
+For the moment being, there should be nothing yet in this folder.
+
+You can also show the content of another folder by indicating the path to this folder. For example, to see the content of the <code>/</code> directory, we can use:
+
+
+
+	<div class="sh">
+	ls /
+	</div>
+
+
+You should see the folders we mentionned in the previous part.
+
+To see the content of the folder <code>/usr/bin</code> we can do:
+
+
+
+	<div class="sh">
+	ls /usr/bin
+	</div>
+
+
+In those two examples, we have used the <b>absolute path</b>: the path from <code>/</code> to the directory we want to see.
+
+We could have added different options:
+<ul>
+	<li><code>-a</code>: to list all the files even those that are hidden (to add a file, just name it with a <code>.</code> at the beginning).</li>
+	<li><code>-l</code>: to add informations about the files (permissions, size, ...).</li>
+	<li><code>-R</code>: to list all the files recursevely among the subfolders.</li>
+	<li>...</li>
+</ul>
+
+You can see all the available commands thanks to:
+
+
+	<div class="sh">
+	ls --help
+	</div>
+
+
+Now let's get back to our <code>~</code> directory and list all the files:
+
+
+
+	<div class="sh">
+	ls -a
+	</div>
+
+
+You should see different items: two of them are a bit special:
+
+
+
+	<div class="sh">
+	.
+	..
+	</div>
+
+
+Those two represents respectively the current and the parent directories. So <code>.</code> is actually a representation of <code>/home/ubuntu</code> and <code>..</code> of <code>/home</code>. This allows us to use the <b>relative path</b>: to point to a file or a folder, you can use the path from the root <code>/</code> or the path from where you are at. For example, being in <code>/home/ubuntu</code>, you can list the content of the parent directory, <code>/home</code>, with:
+
+
+	<div class="sh">
+	ls ..
+	</div>
+
+
+You can also list the content of the <code>/usr/bin</code> using:
+
+
+	<div class="sh">
+	ls ../../usr/bin
+	</div>
+
+
+The commands knwos that it has to go to the parent directory of the parent directory of the current working directory and then look for <code>usr</code> and then <code>bin</code>. Absolute and relative path can be used in the same way nearly all the time.
+
+Now that we know how to list the files in and from the current directory, we need to know how to change the current directory: we use the command <code>cd</code> short for <code>change directory</code>.
+
+Try to change the working directory to <code>/</code>:
+
+
+	<div class="sh">
+		cd /
+	</div>
+
+
+You can check that we have indeed change the working directory with <code>pwd</code>.
+
+<i>Try going to the directory </i><code>/usr/bin</code><i>. You can use multiple steps. Then list the content of the folder.</i>
+
+Note that we can go to the user home folder <code>/home/ubuntu</code> with only <code>cd</code> or <code>cd ~</code>.
+
+<i>Return to the home folder using the way you prefer.</i>
+
+Now that we can change directory and list its content, we will see how to create documents and folders.
+
+To create an empty file, we can use the command <code>touch</code> and specify a filename.
+
+
+	<div class="sh">
+	touch my_file
+	</div>
+
+
+If the file already exist, this just changes the last modification date.
+
+<i>In the home folder, create files </i><code>file1</code><i>, </i><code>file2</code> and <code>file3</code><i>. Check that the files appear in the folder using  </i><code>ls ~</code><i>.</i>
+
+To create a directory, we can use <code>mkdir</code> (short for <code>make directory</code>) and specify a directory name:
+
+
+	<div class="sh">
+	mkdir my_directory
+	</div>
+
+
+<i>Create a directory named </i><code>directory1</code><i> in the the home folder.</i>
+
+We can also create files and directories in a different folder by using the path to this other folder and the name of the file or directory: for example execute the following command:
+
+
+	<div class="sh">
+	touch ./directory1/file4
+	</div>
+
+
+<i>Check that the file has been created with </i><code>ls -R</code><i>.</i>
+
+We can delete files by using the command <code>rm</code> which is short for <code>remove</code>: <i>delete the file</i><code>file3</code><i> with:</i>
+
+
+	<div class="sh">
+	rm file3
+	</div>
+
+
+ or
+
+
+	<div class="sh">
+	rm ./file3
+	</div>
+
+
+or even
+
+
+	<div class="sh">
+	rm /home/ubuntu/file3
+	</div>
+
+
+we can also delete a directory by using the <code>-r</code> argument: <i>delete the folder that we created earlier with the following command</i>
+
+
+	<div class="sh">
+	rm -r /home/ubuntu/directory1
+	</div>
+
+
+<i>Then recreate a directory named </i><code>directory2</code><i> in the home folder.</i>
+
+We can also copy/paste or move documents with <code>cp</code> or <code>mv</code> respectively.
+
+<i>We will copy/paste the file</i><code>file1</code><i> into the directory </i><code>directory2</code><i>:</i>
+
+
+	<div class="sh">
+	cp ./file1 ./directory2/
+	</div>
+
+
+To do the same thing but with a different name for the new file, we can do:
+
+
+	<div class="sh">
+	cp ./file1 ./directory2/new_file1
+	</div>
+
+
+<i>We will move the file</i><code>file2</code><i> into the directory </i><code>directory2</code><i> and renaming it </i><code>new_file2</code><i> with:</i>
+
+
+	<div class="sh">
+	mv ./file2 ./directory2/new_file2
+	</div>
+
+
+Note that we can use <code>mv</code> to rename a file, if the path of the location of the new file does not change.
+
+<i>Check all your changes with </i><code>ls -R</code><i>.</i>
+
+To move, rename or copy/paste a folder, we just need <code>-r</code> argument just as with <code>rm</code>.
+
+
+<h2>Editing and reading files</h2>
+<h3>Printing into a file</h3>
+
+To print a text, we can use the <code>echo</code> command. <i>Try it out</i>
+
+
+	<div class="sh">
+	echo hello world
+	</div>
+
+
+This should print out <code>hello world</code> in the standard output (the console output).
+
+If we want to write the content into a file, we can use <code>></code> or <code>>></code>.
+For example, we will write <code>hello world</code> into the file <code>file1</code>.
+
+
+	<div class="sh">
+	echo hello world > file1
+	</div>
+
+
+The difference between the two commands is that the first overwrites the content of the file if it exists while the second one appends the text to the end of the file if it exists. If the file does not exist, then in both cases, it is created and filled with the text.
+
+To read the content of a file, we can use <code>cat</code>.
+
+<i>Try it on </i><code>file1</code><i>:</i>
+
+
+	<div class="sh">
+	cat file1
+	</div>
+
+
+It should return <code>hello world</code>.
+
+<i>Now run the following commands:</i>
+
+
+	<div class="sh">
+	echo hello world > file1<br>
+	echo hello world > file1<br>
+<br>
+	echo hello world >> file2<br>
+	echo hello world >> file2<br>
+	</div>
+
+
+<i>And read the content of both files: the first one will give only one line while the second one will show two lines.</i>
+
+Notice that we can do this for every command: everything that is printed out in the standard output can be redirected into a file:
+
+<i>Run the following command to print the content of the </i><code>/</code><i> into a file named </i><code>root_content</code><i>.</i>
+
+
+	<div class="sh">
+	ls / > root_content
+	</div>
+
+
+
+<i>Then read its content</i>
+
+Sometimes we do not want to read all the file at once but only the beginning or the end. For this we can use <code>head</code> or <code>tail</code>. For both commands, we can use the argument <code>-n</code> and add a number of lines to display. <i>Try it with </i><code>root_content</code><i>:</i>
+
+
+
+	<div class="sh">
+	head -n 2 root_content<br>
+	tail -n 3 root_content<br>
+	</div>
+
+
+<h3>A word on redirections</h3>
+
+With the help of <code>></code> and <code>>></code>, we have redirected the <b>standard output</b> into other files. The standard output is a device that prints out the results of the commands entered into  the <b>standard input</b>. Moreover, there is a third part, the <b>standard error</b> which prints out the error messages. By default, both standard output and standard input are redirected to the output of the console.
+Note that we can choose to print the result of a command from the standard output to a file and at the same time print the errors into another file.
+
+<i>For example, this command should throw an error:</i>
+
+
+	<div>
+		cat no_file
+	</div>
+
+
+If we use the keyword <code>2></code> or <code>2>></code>, we can redirect the standard error to a file:
+
+
+	<div>
+		cat no_file 2> errors_file
+	</div>
+
+
+There should not have been any error message.
+
+Yet if we print the content of the <code>errors_file</code> into the standard output,
+
+
+	<div>
+		head errors_file
+	</div>
+
+
+We can of course combined the two redirections to have the results in a file and the errors in another file.
+
+We can see the error message.
+
+If we want both standard error and standard output to be redirected to the same file, we can use: <code>2>&1</code>.
+Note also that standard input, standard output and standard error are each associated with a file descriptor, respectively 0, 1, 2. The <code>2</code> in <code>2></code> correspond to this descriptor (in fact <code>1></code> is a longer version of <code>></code> and responds to the same logic).
+
+We can also redirect text to the standard input with <code><</code> or <code>0<</code>. <i>Try for example:</i>
+
+
+	<div>
+		head < root_content
+	</div>
+
+
+Finally, we can use <code><<</code> with a word. <i>For example: </i>
+
+
+	<div>
+		cat << END
+	</div>
+
+
+<i>Try typing in several lines and then at some point, type in </i><code>END</code><i>.</i>
+
+The last operator that is interesting is the pipe operator <code>|</code>. This takes the output of a command, ie the standard output, and redirects it into another function. This is very useful in some cases. <i>Try for example this command</i>
+
+
+	<div class="sh">
+		ls / | grep bin
+	</div>
+
+
+The function <code>grep</code> is a function that takes some lines and an expression and returns only the lines that contain this expression.
+
+You should see only two lines:
+
+
+	<div class="sh">
+		sbin
+		bin
+	</div>
+
+
+The output of <code>ls /</code> is the list of all the files in <code>/</code> and <code>grep</code> filters only those that contains <code>bin</code> in their name.
+
+<h3>How to edit text directly: Nano</h3>
+
+
+We can edit a file with a text editor: <code>nano</code> is a small text editor installed by default on Ubuntu systems.
+
+<i>Open it with </i><code>nano</code><i>. Then type anything you want ("Hello world", "FooBar", ...).</i>
+
+To close <code>nano</code>, you must do <code>ctrl+X</code>. It offers to save your file and if you type <code>Y</code>, it offers to type in the name of the file you want to save your text in. There are other <a href="https://www.nano-editor.org/dist/latest/nano.html#Editor-Basics">possibilities</a> but these are the essentials.
+
+<h2>Permissions</h2>
+
+<h3>Reading permissions</h3>
+
+In this part, we are going to talk about permissions.
+
+<i>First, list all the files in </i><code>/</code><i> with the argument </i><code>-l</code><i>.</i>
+
+
+	<div class="sh">
+		ls -l /
+	</div>
+
+
+You should have outputs that are similar to this:
+
+
+	<div class="sh">
+		-rw-rw-r-- 1 ubuntu ubuntu 133 Apr 12 11:10 file
+	</div>
+
+
+
+There are multiple parts in this output:
+<ul>
+	<li><code>-rw-rw-r--</code>: permissions of the object.</li>
+	<li><code>1</code>: number of links to this object.</li>
+	<li><code>ubtuntu</code>: owner username.</li>
+	<li><code>ubuntu</code>: owner usergroup.</li>
+	<li><code>133</code>: size of the object.</li>
+	<li><code>Apr 12 11:10</code>: last modificatiion date.</li>
+	<li><code>file</code>: name of the object.</li>
+</ul>
+
+The fist part indicates the permissions that are given to the different users:
+<ul>
+	<li><code>-</code>: this first part corresponds to the nature of the object: <code>d</code> for a directory, <code>-</code> for a file, <code>l</code> for a link.</li>
+	<li><code>rw-</code>: corresponds to the permissions granted to the owner of the object.</li>
+	<li><code>rw-</code>: corresponds to the permissions granted to the users belonging to the same group as the owner.</li>
+	<li><code>r--</code>: corresponds to the permissions granted to the other users.</li>
+</ul>
+
+
+The permissions seems a bit cryptic but it is actually quite easy: there are three slots:
+<ul>
+	<li>reading rights: <code>r</code></li>
+	<li>writing rights: <code>w</code></li>
+	<li>execution rights: <code>x</code></li>
+</ul>
+
+A letter indicates that the right is granted while <code>-</code> indicates that the user has not this right.
+
+Users are grouped to provide easier management of rights: for example if I want to provide the same permissions to a file to my group of users, it is much easier.
+
+
+<h3>Super user and sudo</h3>
+
+As you can see there are some things that you cannot do as a regular user. To overgo those permissions, we can use the super user or <code>root</code>.
+
+There are multiple ways to use this super user.
+
+First, you can connect as a super user using <code>su</code>.
+
+<i>Try it and you should see, as stated before, that the </i><code>$</code><i> has turned into </i><code>#</code><i> and that the user name displayed in the terminal is now: </i><code>root</code><i>. You can exit this mode by using </i><code>exit</code><i>.</i>
+
+We can also require <code>root</code> priviledge by using <code>sudo</code>. When you type in a command, you can add <code>sudo</code> - this will trigger a password demand - and you will be able to use <code>root</code> priviledges for this command.
+
+
+<h3>Changing permissions</h3>
+
+But what now, if you want to change the rights of a file ? The command to use is <code>chmod</code> but you need <code>root</code> permissions if you are not the owner of the file.
+
+Examples of usage of this command are the following:
+
+	<div class="sh">
+		chmod 777 file<br>
+		chmod a+rwx file<br>
+	</div>
+
+
+The first way might be the easier: there are 3 numbers for the 3 slots for permissions. The number indicates the rights in binary:
+<ul>
+	<li><code>0</code>: <code>---</code></li>
+	<li><code>1</code>: <code>--x</code></li>
+	<li><code>2</code>: <code>-w-</code></li>
+	<li><code>3</code>: <code>-wx</code></li>
+	<li><code>4</code>: <code>r--</code></li>
+	<li><code>5</code>: <code>r-x</code></li>
+	<li><code>6</code>: <code>rw-</code></li>
+	<li><code>7</code>: <code>rwx</code></li>
+</ul>
+
+The second way might be a bit more complicated:
+<ul>
+	<li><code>a</code>: this gives us the users to change the permissions to: <code>a</code> for all, <code>u</code> for the owner of the file, <code>g</code> for the group of the owner and <code>o</code> for the other users.</li>
+	<li><code>+</code>: this gives us whether we want to give or take back rights: <code>+</code> to give and <code>-</code> to take back.</li>
+	<li><code>rwx</code>: the rights to give or to take back. We just add the letters that are concerned.</li>
+</ul>
+
+
+<h2>Bash language</h2>
+
+<b>Bash</b> is a language installed by default on Linux machines and drives the manipulation of files.
+
+<h3>Executing bash scripts</h3>
+
+A Bash script is a simple file containing lines of codes written in Bash that can be executed. It contains at the top a shebang, e.g. an indicator of the location of the shell that should be used to execute the code:
+
+
+	<div class="sh">
+		#!/bin/bash
+	</div>
+
+
+This is something that you will find in a lot of scripts, not only Bash scripts: for example, at the beginning of a Python script, you can find a <code>#!/bin/python3</code>. This makes the file able to be executed on its own.
+
+
+<i>Open a file named <code>script.sh</code> with <code>nano</code>. Add the shebang corresponding to bash and another line that lists the content of the <code>/</code> directory. Then leave the file and save it.</i>
+
+There are two ways to execute the file:
+
+
+	<div class="sh">
+		bash script.sh<br>
+		./script.sh<br>
+	</div>
+
+
+In the first case, we are only reading the content of the file and feeding it to Bash. In the second case, we are executing it. By default this should trigger an error as you do not have the rights to execute this file. <i>Edit the rights to make this file executable by you and try to relaunch it.</i>
+
+<h3>Bash basics</h3>
+
+<h4>Comments</h4>
+
+First, as with every programing language, you can comment parts of your code. To do so, you can comment a line by using <code>#</code> at the beginning of the line.
+
+<h4>Defining a variable</h4>
+
+To define a variable, we can use <code>=</code>. For example, we can define the variable <code>my_variable</code> as:
+
+
+	<div class="sh">
+		my_variable=hello
+	</div>
+
+
+
+<i>In the shell try this command. Try using the <code>echo</code> command to print out the content of the variable with:</i>
+
+
+	<div class="sh">
+		echo my_variable
+	</div>
+
+
+You should see that the standard output shows <code>my_variable</code>... It is because you have to ask for the value of the variable using <code>$</code>.
+
+<i>Try the following line of code.</i>
+
+
+	<div class="sh">
+		echo $my_variable
+	</div>
+
+
+Note that variables are untyped and should appear as arrays of characters but some can be used for arithmetic operations, comparisons, ...
+
+<h4>Quotes</h4>
+
+If you want to assign a sentence to a variable, you will have some problems: <i>Try for example</i>
+
+
+	<div class="sh">
+		my_variable=hello world
+	</div>
+
+
+This is because the space breaks the variable assignment. You should use quote to perform this :
+
+	<div class="sh">
+		my_variable="hello world"
+		echo $my_variable
+	</div>
+
+
+There are multiple types of quotes: <code>'</code>, <code>"</code> and <code>`</code>:
+<i>To understand the differences between the two first, execute the following lines: </i>
+
+	<div class="sh">
+		echo 'the content of my variable is $my_variable'<br>
+		echo "the content of my variable is $my_variable"<br>
+	</div>
+
+
+
+The last one is used to assign the result of a bash command to a variable:
+
+
+	<div class="sh">
+		my_variable=`ls -l`<br>
+		echo $my_variable<br>
+	</div>
+
+
+
+<h4>Mathematical Operations</h4>
+We can define mathematical operations, using the <code>let</code> keyword:
+
+
+	<div class="sh">
+		let "a=1"<br>
+		let b=2<br>
+		let "c=b"<br>
+		let "d = a + b * c"<br>
+		echo $d<br>
+	</div>
+
+
+The mathematical operations are quite similar to other programing languages: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code>, ...
+
+
+<h4>Arrays</h4>
+
+We can define list-like objects called <b>arrays</b>, to store multiple values at once:
+
+
+	<div class="sh">
+		my_array=(hello world)
+	</div>
+
+
+To access the different values of the array, we can use the following syntax, starting indexes at 0:
+
+
+	<div class="sh">
+		echo ${my_array[0]}
+	</div>
+
+
+To assign new values, we can use:
+
+
+	<div class="sh">
+		my_array[0]=Hi<br>
+		echo ${my_array[0]}<br>
+	</div>
+
+
+And to return the full array, we just replace the index by <code>*</code>.
+
+
+	<div class="sh">
+		echo ${my_array[*]}
+	</div>
+
+
+To add elements to the list, we simply assign values to indexes that are not yet present in the array:
+
+
+	<div class="sh">
+		my_array[2]=or<br>
+		my_array[4]=hello<br>
+		my_array[1000]=world<br>
+<br>
+		echo ${my_array[*]}<br>
+	</div>
+
+
+Note that the index do not need to be complete: indexes do not need to follow each other.
+
+Moreover, there are two interesting features to arrays:
+<ul>
+	<li><code>${!my_array[*]}</code> returns the indexes of the elements.
+	</li>
+	<li><code>${#my_array[*]}</code> returns the number of elements.
+	</li>
+</ul>
+
+<h3>Loops and conditions</h3>
+
+<h4>If</h4>
+
+To check a condition and perform an operation if it has succeeded, we can use a if-then-fi structure:
+
+
+	<div class="sh">
+		if [ condition ]<br>
+		then<br>
+			echo "the statement is true"<br>
+		fi<br>
+	</div>
+
+
+If you want to add an <code>else</code> statement, we can do so with:
+
+
+
+	<div class="sh">
+		if [ condition ]<br>
+		then
+			echo "the statement is true"<br>
+		else<br>
+			echo "the statement is false"<br>
+		fi<br>
+	</div>
+
+
+If we want to chain conditions to check several cases:
+
+
+	<div class="sh">
+		if [ condition1 ]<br>
+		then<br>
+			echo "the statement 1 is true"<br>
+		elif [ condition2 ]<br>
+			echo "the statement 2 is true"<br>
+		else<br>
+			echo "the statement are false"<br>
+		fi<br>
+	</div>
+
+
+We can use a lot of elements to create a condition:
+<ul>
+	<li><code>$var1=$var2</code> checks for equality for character arrays</li>
+	<li><code>$var1!=$var2</code> checks for inequality for character arrays</li>
+	<li><code>-z $variable</code> checks if the character array is empty</li>
+	<li><code>-n $variable</code> checks if the character array is not empty</li>
+	<li><code>$var1 -eq $var2</code> checks if the numerical values are equal</li>
+	<li><code>$var1 -ne $var2</code> checks if the numerical values are inequal</li>
+	<li><code>$var1 -gt $var2</code> checks if <code>var1 > var2</code> </li>
+	<li><code>$var1 -lt $var2</code> checks if <code>var1 < var2</code></li>
+	<li><code>$var1 -ge $var2</code> checks if <code>var1 >= var2</code> </li>
+	<li><code>$var1 -le $var2</code> checks if <code>var1 <= var2</code></li>
+</ul>
+
+To combine two conditions, we can use <code>&&</code> for an end clause or <code>||</code> for an or clause:
+
+
+	<div class="sh">
+		if [ condition1 ] && [ condition2 ]<br>
+		then
+			echo "the statements are true"<br>
+		else
+			echo "one of the statements is false"<br>
+		fi
+	</div>
+
+
+<h4>While</h4>
+
+To perform a <b>while</b> loop, the syntax is the following:
+
+
+	<div class="sh">
+		while [ condition ]<br>
+		do <br>
+			echo "the statement is true"<br>
+		done<br>
+	</div>
+
+
+
+<h4>For</h4>
+
+To perform a <b>for</b> loop, the syntax is the following:
+
+
+	<div class="sh">
+		for x in '1st iteration' '2nd iteration' '3rd iteration'<br>
+		do<br>
+			echo $x<br>
+		done<br>
+	</div>
+
+
+An interesting function for those loops is <code>seq</code>. This function provides a sequence of integer from a start to an end: <i>Try it: </i>
+
+
+	<div class="sh">
+		seq 3 22
+	</div>
+
+
+<h3>Functions</h3>
+
+There are two ways to define a function:
+
+
+	<div class="sh">
+		my_function () {<br>
+  			echo "we can do something here"<br>
+		}<br>
+	</div>
+
+
+or
+
+
+	<div class="sh">
+		function my_function {<br>
+  			echo "we can do something here"<br>
+		}
+	</div>
+
+
+The arguments to pass to the function are given by their number: For example a function in which we print the first than the second argument will look similar to this:
+
+
+	<div class="sh">
+		function my_function {<br>
+  			echo "first argument"<br>
+  			echo $1<br>
+  			echo "second argument"<br>
+  			echo $2<br>
+		}<br>
+	</div>
+
+
+<h2>apt</h2>
+
+<code>apt</code> is a repository manager whose repositories contain different software that you can install pretty easily with a single line of code.
+To do so we can do the following:
+
+
+	<div class="bash">
+		apt install software_name
+	</div>
+
+
+In older versions of Ubuntu, you need <code>apt-get</code> instead of <code>apt</code>. In most cases you need to <code>sudo</code> permissions to install the softwares.
+
+To make sure that the repositories are up to date, you can use <code>sudo apt update</code> and to upgrade the softwares, you can use <code>sudo apt upgrade</code>. You can add or remove some repositories and remove completely a software using this <code>apt</code> facility.
+
+<i>Try installing <code>curl</code>, <code>default-jdk</code> or other softwares</i>
+
+
+
+
+<h2>Exercises</h2>
+
+This part is a list of exercises to train using bash. Some functions were not detailed during the lesson but you can look it up online or call for the help (using <code>--help</code> in most cases):
+
+<ul>
+	<li>write a script called <code>greetings.sh</code> that asks the name of a user and greets him with his name: use <code>read</code></li>
+	<li>write a script called <code>clock.sh</code> that prints out the time every 5 seconds: use <code>sleep</code> and <code>date</code></li>
+	<li>write a script called <code>wordcount.sh</code> that downloads a book from the <a href="https://www.gutenberg.org/">Gutenberg project</a> using <code>wget</code> and return the 10 most used words from the book using <code>wc</code></li>
+	<li>wrtie a script called <code>listens.sh</code> that prints out the listening sockets port numbers  using <code>ss</code> and <code>cut</code>.
+</ul>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    change_code = function(language='python'){
+        var divs = document.getElementsByClassName(language);
+        for (var i=0; i<divs.length; i++){
+            var element = divs[i];
+            var nb_lines = element.innerHTML.split("\n").length;
+            element.style.height = (nb_lines * 12) + 'px';
+            var editor = ace.edit(divs[i].id);
+            editor.setTheme("ace/theme/monokai");
+            editor.session.setMode("ace/mode/" + language);
+            editor.setReadOnly(true);
+            }
+        }
+    var languages = ['python', 'sql', 'sh', 'json', 'dockerfile', 'yaml'];
+    for (var l=0; l<languages.length; l++){
+        change_code(languages[l]);
+    }
+
+</script>
+<script>
+    next_slide = function(element, number_of_images){
+        var image_name = element.src.match('image[0-9]+\\.png')[0];
+        var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
+        var new_image_path = 'image' + new_image_number + '.png';
+        element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
+        return false;
+    }
+</script>
+<script>
+    function copyText(element) {
+      var range, selection, worked;
+
+      if (document.body.createTextRange) {
+        range = document.body.createTextRange();
+        range.moveToElementText(element);
+        range.select();
+      } else if (window.getSelection) {
+        selection = window.getSelection();
+        range = document.createRange();
+        range.selectNodeContents(element);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      try {
+        document.execCommand('copy');
+        alert('text copied');
+      }
+      catch (err) {
+        alert('unable to copy text');
+      }
+    }
+</script>
+</body>

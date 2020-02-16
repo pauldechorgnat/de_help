@@ -1,648 +1,864 @@
-<h1>Big Data: Velocity</h1>
+<head>
+    <style>
+    table {
+        margin: 20px;
+    }
 
-In this lesson, we will cover another aspect of Big Data: <b>Velocity</b>: data is created at great speed and must be treated in the least possible time. Therefore, we need specific tools and architectures to deal with this. 
+    body {
+        font-family: Source Sans Pro,sans-serif;
+        }
+    .slider {
+        width:80%;
+        margin-left: auto;
+        margin-right: auto;
+        height:auto;
+    }
 
-<h2>Streaming data</h2>
-<h3>Introduction</h3>
-<p>
-Streaming data is when data is created continuously: it is an unbounded flow of data. Each observation is created at a given moment that we will called <b>event time</b> and processed at the <b>processing time</b>. Of course the <b>event time</b> is important as it is the time at which the observations are created, which means data is supposed to be ordered by this and to reach the system that will process it in the same order. 
-</p>
-<p>
-Yet it is not always the case. You can think of text messages: if Alice sends a message a time <i>t</i> to Bob and Carol does the same at <i>t+1</i>. If Alice has bad network connection, then it is possible that the message reaches Bob after Carol. The event times reflects rightly the chronology of the events while the processing time is not the good one. 
-</p>
-<p>Streaming data can be generated in a lot of different ways: 
-</p>
-<ul>
-<li>Sensors (temperature, pressure, traffic, ...)</li>
-<li>IoT (connected watches, smartphones, ...)</li>
-<li>Financial time series (for High Frequency Trading for example)</li>
-<li>Web metrics (sessions, logs, ... on a website for retargeting purposes)</li>
-<li>CCTV for strange behaviour detection</li>
-<li>Live videos (for autonomous cars or simply live streaming)</li>
-</ul>
-<p>There are some interesting characteristics to look at</p>
-<ul>
-<li><b>Frequency</b>: at which rate is data created ? Is is regular ?</li>
-<li><b>Size</b>: how big is the data created?</li>
-<li><b>Shape</b>: what does data look like? Can it change in anyway?</li>
-</ul>
-<h3>Processing streaming data</h3>
-<p>
-There are different ways to process streaming data:
-<ul>
-<li><b>batch processing</b>: data is stored and then processed at once.</li>
-<li><b>online processing</b>: data is processed as it reaches the system.</li>
-<li><b>mini-batch processing</b>: data is buffered and processed when a limit is reached.</li>
-</ul></p>
-<p>
-Mini-batch processing offers an interesting possibility: as we deal with batches we can have the same syntax as batch processing and when you need both types of computation, this comes in very handy. But you have to find a definition for the buffers: how do you limit the size of the buffer: 
-time based mini-batch: data is acquired during a given time window and then processed.
-event based mini-batch: the limit is reached when a given number of observations is reached. 
-session based mini-batch: the data is acquired all along the live of a session (think of web browsing sessions for example. 
-</p>
-<p>
-Those definitions of mini-batch may raise some issues. In the case of time defined batches, if the data creation frequency skyrockets, your system has to adapt to the rising amount of data. On the other hand, in the case of event based batches, if the data creation frequency drops, we may wait a while before the buffer reaches its limit, reducing the spontaneity of the system at the same time. 
-</p>
-<h3>Streaming architectures</h3>
-<h4>Components</h4>
-<p>
-To deal with streaming data, we need multiple components. 
-</p>
-<p>
-First, we need a system that can receive data and carry it to the other components: this is generally a messaging system and some of the most known are: 
-<ul>
-<li>Kafka</li>
-<li>RabbitMQ</li>
-<li>ActiveMQ</li>
-</ul>
-<p>
-Then, we need a streaming data processing engine: 
-<ul>
-<li>Spark : batch and mini-batch processing</li>
-<li>Flink : batch and online processing</li>
-<li>Storm : online processing </li>
-</ul>
-</p>
-<p>
-And finally, we need a storage facility which has a good writing speed: 
-<ul>
-<li>MongoDB : document oriented DBMS</li>
-<li>Cassandra : column oriented DBMS</li>
-<li>HBase : column oriented DBMS</li>
-</ul>
-<p>
-In the following, we will study Kafka, Spark and HBase. 
-</p>
-<h4>Lambda architecture</h4>
-<p>
-We also need specific architectures to combine those components: the most known is the Lambda Architecture. This architecture reaches an interesting tradeoff between velocity and veracity.
-There are several layers in this architecture: 
-<ul>
-<li><b>Batch layer</b> where data is stored for a long time </li>
-<li><b>Speed layer</b> where data is processed very quickly </li>
-<li><b>Serving layer</b> providing views from the batch layer</li>
-</ul>
-</p>
-<p>
-When an observation is reaches the system, it is sent to both the speed layer and the batch layer. In the batch layer it is stored in what is called the master dataset. In the speed layer, it is processed and the output is made available to clients as the streaming view. This means that the client can have a fresh view of the transformation undergone by the data. On the other hand, in the batch layer, we only store data until a given point (time based or observation based). When this point is reached, the whole data undergoes the same transformations as in the speed layer. Then it is written in the serving layer to provide more accurate views (being punctual views or aggregated views). <br/>
-The clients can then request very fresh data (streaming views) or more accurate data (batch views) depending on the task.
-</p>
-<p>
-This is interesting because if we go back to our example with the text messages: the speed layer will process the second text message before the delayed one: the streaming view will not be accurate. Yet, if the delay is not too long, the text messages will be treated at the same time in the batch layer, providing an accurate view. 
-</p>
-<p>
-But this architecture has some issues of its own: we have to maintain two version of the same code (one for the batch layer and one for the speed layer) and if we work with a streaming engine that do not use both, we will have two different languages, two different syntaxes at least… Moreover, to truly achieve spontaneity in the speed layer, we need two similar threads running  in parallel (when the computation is done in the speed layer and data arrives, we need someone to process it). 
-</p>
-<p>
-We will speak about the Kappa architecture, which fixes some issues of the Lambda architecture when we will have introduced Kafka. 
-</p>
-<h2>Apache Kafka</h2>
-<h3>Introduction to messaging systems</h3>
-<p>
-The role of messaging systems is take inputs from multiple sources and carry it to multiple clients. When dealing with messaging systems, those sources are called <b>producers</b> and the clients are called <b>consumers</b>. The advantages of having a specific tool to carry data is that it allows multiple consumers to receive data from the same producer (for example if there are multiple tasks to perform on the same data) or, on the contrary, multiple producers sending data to a single consumer (for example multiple temperature sensors whose data are supposed to undergo the same transformation). </p>
-<p>
-Another argument for the use of messaging systems is that it allows the addition or the suppression of consumers and producers without further modification of the current workflow.</p>
-<p>
-There are different types of messaging systems: 
-<ul><li>Asynchronous vs Synchronous</li>
-<li>Queue oriented vs Publish/Subscribe</li>
-</ul>
-</p>
-<p>
-While synchronous messaging systems requires that the consumers receives the data to send more data, asynchronous messaging systems totally decouple the consumer from the producer: this means that when the consumer crashes, the production of data does not have to stop.</p>
-<p>
-Queue messaging systems receives data and stores it until the data is consumed. This means that when data is received by the messaging system from the producer, the data is stored until the consumer accesses it, processes it and acknowledges the reception. At this point the data is deleted from the messaging system buffer.</p>
-<p>
-Publish/Subscribe messaging systems stores data for a given period of time. When a producer emits data to the messaging system, the data is stored according to a given topic. Consumers are subscribing to those different topics to get the data. Multiple consumers can subscribe to the same topic. For example, we may have temperature sensor and a pressure sensor as producers. They respectively publish data to <i>temperature</i> and <i>pressure</i> topics. When an observation is made, the data is stored into the respective topics. On the consumer side, we have a streaming visualization tool that shows temperature history, a tool that makes temperature forecasting and a visualization tool that shows pressure history. The two first consumer will each subscribe to the <i>temperature</i> topic while the last one will subscribe to the <i>pressure</i> topic. Hence, they will get access to the data from the subscribed topics until this data is deleted from the messaging system.</p>
-<p>To summarize, messaging systems are the middle man that links producers and consumers to simplify data transportation.</p>
-<h3>Introduction to Kafka</h3>
-<p><a href="https://kafka.apache.org/">Apache Kafka</a> is an Open Source messaging system created by Linkedin and first released in 2011. It is now part of the Apache Foundation projects.</p>
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Kafka.png" style="width:50%"/></center>
-<p>It relies on the Asynchronous and Publish/Subscribe models. Distributed, it can achieve very high throughput: Linkedin claimed a 2M writes per second throughput.</p>
-<h3>Architecture and mechanics</h3>
-<p>Apache Kafka uses a Producer/Brokers/Consumers architecture: data is published to different topics by producers while consumers may subscribe to those topics and retrieve data from it. Brokers are the different daemons running on the different machines of the cluster. There are in charge of replicating and partitioning data.</p>
-<p>The brokers host replicas of the different partitions among a same topic:</p>
+</style>
+</head>
+<body>
 
-<div class="slider">
-    <center>
-        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/kafka_architecture_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
-             onclick="next_slide(this, 4);return false;"/>
-    </center>
-    </div>
-<p>Partitions are of two types: leaders and followers. There is one leader per partition and those leaders are supposed to be evenly distributed among brokers. In the example, there is one leader partition per broker. The replicas of the the leading partition are considered as following partition.</p>
-<p>Assigning leader and follower is done by votes using <a href="https://zookeeper.apache.org/">Apache Zookeeper</a>. We will not go into detail for this tool: the only thing we need is that Zookeeper is used to do administration and maintenance on distributed systems. Here it is used to decide the leading and following partitions. When a broker is down, the partitions that were leader are re-attributed through Zookeeper: we need one leading partition for every partition.</p>
-<h4>Production</h4>
-<p>When a producer publishes an observation into a given topic, it is attributed to a partition. Kafka will then write the observation onto the leading replica of this partition. It is then replicated to the other replicas.</p>
+<div class="container">
+<hr style="border-width: 2px ; border-color: #75dfc1">
+<center><h1>Automation and deployment</h1></center>
+<hr style="border-width: 2px ; border-color: #75dfc1">
 
-<div class="slider">
-    <center>
-        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/kafka_production_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
-             onclick="next_slide(this, 9);return false;"/>
-    </center>
-    </div>
-<p>Note that the data is directly written onto the disk: most of the messaging systems implement a device that caches data so that it is quickly readable. Yet as most of the modern OS already have this cache natively implemented, Kafka relies on the OS for caching data.</p>
-<p>When data reaches Kafka, it is given a sequential id called the offset. This offset is incremented as data reaches Kafka.</p>
-<h4>Consumption</h4>
-<p>In Kafka, clients are grouped into consumers group. We can have multiple consumers or have only one per consumer group.</p>
-<p>A consumer group subscribes to a topic and data is retrieved by group. This means that the different consumers of a same consumer group will not have access to the whole data.</p>
-<p>Partitions will be evenly distributed among member of a consumer group and consumers will read data from the leading partitions. This is very useful when we have complicated processes that do not need the complete data: each of the consumer will do the same job on part of the data.</p>
+<p>One of the major aspects of Data Science that is often under-estimated is the deployment and automation: <br>Let’s say you have a Machine Learning model that can predict if a visitor on your website will be likely to purchase an item if retargeted. The model has been trained on historical data, e.g. on fixed data, and you need to put the model into production. There are several issues that you have to take into account. First, you need to set a production environment that should not interfere with other production environments. Then, you need to get your predictions into a way that is accessible to other programs. Finally, you want your production server to tell you if there is something wrong going on. <br>Those issues are very important and have to be dealt with, whether by the Data Scientist but more often by the Data Engineer. </p>
 
-<div class="slider">
-    <center>
-        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/kafka_consumption_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
-             onclick="next_slide(this, 3);return false;"/>
-    </center>
-    </div>
-<p>For example, if you use Kafka to retrieve data from hundreds of seismic under water beacons. All the data will be sent through the 4G for example to the different brokers. On the consumption side, you can have a consumer group that will have 10 machines, each of them only checking if the seismic activity is not abnormal. You do not need to have every consumer having access to all the data. Moreover you can have a different consumer group that will subscribe to the same topic but that will write data into a data lake for further analysis.</p>
-<p>Data is only accessed through the leading partitions which explains the importance of an even distribution of leading partitions and the major role of Zookeeper to always have a leading partition up and running.</p>
-<h3>Installation</h3>
-<p>First, as usual, we need to decompress the archives</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">tar xvf ~/kafka_2.11-2.4.0.tgz<br>
-mv ~/kafka_2.11-2.4.0 ~/kafka<br>
-tar xvf ~/apache-zookeeper-3.5.5-bin.tar.gz<br>
-mv ~/apache-zookeeper-3.5.5-bin ~/zookeeper</code>
-</blockquote>
-<p>
-We need to add the paths to kafka in the <code>.bashrc</code> file with <code>nano ~/.bashrc</code>.
-</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">export KAFKA_HOME=/home/ubuntu/kafka<br>
-export PATH=$PATH:$KAFKA_HOME/bin<br>
-export ZOOKEEPER_HOME=/home/ubuntu/zookeeper<br>
-export PATH=$PATH:$ZOOKEEPER_HOME/bin</code>
-</blockquote>
-<p>Do not forget to commit the changes with <code>source ~/.bashrc</code>.</p>
-<p>We just need to configure the Kafka server. To do so, edit the configuration file using <code>nano ~/kafka/congig/server.properties</code>. Check that the line containing information about the listeners is not commented. Look for the line <code>#listeners=PLAINTEXT://:9092</code> and un-comment it. </p>
-<p>Before launching the Kafka server, we need to configure and launch Zookeeper:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">cp $ZOOKEEPER_HOME/conf/zoo_sample.cfg $ZOOKEEPER_HOME/conf/zookeeper_server.conf<br>
-$ZOOKEEPER_HOME/bin/zkServer.sh start $ZOOKEEPER_HOME/conf/zookeeper_server.conf</code>
-</blockquote>
-<p>Now we can to launch the server:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">~/kafka/bin/kafka-server-start.sh ~/kafka/config/server.properties</code>
-</blockquote>
-<p>This should print out a lot of information. <b>Do not exit this process</b>. (you can but you will have to run the previous command again.</p>
-<p>Open a new console and type in the following lines to see if the server is indeed running:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">jps | grep QuorumPeerMain<br>
-jps | grep Kafka</code>
-</blockquote>
-<p>The first line is to see the Zookeeper process running and second is for the Kafka server.</p>
-<h3>Practice</h3>
-<p>In this second console, we are going to create a topic to write data to.</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">~/kafka/bin/kafka-topics.sh --create --topic test \<br>
---zookeeper localhost:2181 \<br>
- --partitions 1 \<br>
---replication-factor 1</code>
-</blockquote>
-<p>In this command, we have created a topic <code>--create</code>. It is named <code>test</code> thanks to the <code>--topic</code> argument. We have to tell him the address used by Zookeeper (which is the default one here). We also need to tell how many partitions we want on the brokers with the argument <code>--partitions</code>. Finally, we have to tell it how many replicas we want with the argument <code>--replication-factor</code>.</p>
-<h4>Console producer</h4>
-<p>We are going to use a console producer to create data. Launch the server through the following command:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">~/kafka/bin/kafka-console-producer.sh \<br>
---broker-list localhost:9092 \<br>
---topic test</code>
-</blockquote>
-<p>To launch such a producer, we need to specify the topic to publish in with the argument <code>--topic</code> and the address of the brokers (here we have only one) with the argument <code>--broker-list</code>. The broker is addressed at <code>localhost:9092</code> which is the default value.</p>
-<p>When this command is launched, you should see a prompt that invites you to enter messages. Please enter any message and press enter to publish it to the topic <code>test</code></p>.
-<h4>Console consumers</h4>
-<p>Once you have sent several messages, we can open a console consumer. This consumer will simply print out the messages. Open a new console and type in the following command:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">~/kafka/bin/kafka-console-consumer.sh \<br>
---bootstrap-server localhost:9092 \<br>
---topic test \<br>
---from-beginning</code>
-</blockquote>
-<p>We find similar arguments as with the console producer: the address of the broker and   the topic. There is one more argument but we will come back to this one.</p>
-<p>You should see all the messages you have written appearing into the consumer console. You can go back to the producer console and send some new lines. They will appear as soon as they are sent in the consumer console.</p>
-<p>Now you can open a new console and launch the previous command without the argument <code>--from-beginning</code>. </p>
-<p>You should not see any message in this new console until you write one in the producer console. In this case, we choose to ignore past messages and only focus on the new messages. But if you close the console and relaunch it with the argument this time, they will appear. This shows that data is indeed stored and that we can retrieve it even if it has already been consumed by another consumer group (in this case, console consumers are considered as single consumer groups).</p>
-<h4>Kafka with Python</h4>
-<p>Python is very handy in Data Engineering as it can be used to link different tools easily. There is multiple Kafka Python clients but we will use this <a href="https://pypi.org/project/kafka-python/">one</a>. Install it through <code>pip</code>.
-
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">pip3 install kafka-python</code>
-</blockquote>
-<p>
-If you open a script file with <code>nano ~/code/python_producer.py</code>, you can create a producer with the following code.
-</p>
-<blockquote>
-<code class="python" onclick="copyText(this);" style="cursor:pointer;">import time<br>
-from kafka import KafkaProducer<br>
-kafka_producer = KafkaProducer(bootstrap_servers='localhost:9092')<br>
-while True:<br>
-    time.sleep(5)<br>
-    kafka_producer.send(topic='test', value='a new message sent at {}'.format(time.asctime()).encode('utf-8'))</code>
-</blockquote>
-<p>Exit the file and launch it:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">python3 ~/code/python_producer.py</code>
-</blockquote>
-<p>Now you can open a console consumer in another terminal with the command used before.<br/>You should see the messages sent by Python.</p>
-<p>If we take a look at the code, it is pretty straight forward: we need to instantiate an object of the class <code>KafkaProducer</code> with the list of brokers' address. Then to send messages, we only need to use the <code>send</code> method. </p>
-<p>To address the consumption though Python, we can use the <code>KafkaConsumer</code> class.<p>
-<p>Open a file with <code>nano ~/code/python_consumer.py</code> and paste the following lines into it: </p>
-<blockquote>
-<code class="python" onclick="copyText(this);" style="cursor:pointer;">from kafka import KafkaConsumer<br>
-kafka_consumer = KafkaConsumer('test', bootstrap_servers='localhost:9092')</code>
-</blockquote>
-<p>To instantiate the class, we have to indicate the topic and the location of the servers. To get data, we can use the <code>poll</code> method. By specifying the argument <code>timeout_ms</code>, the consumer will wait for data to be available if there is not.
-</p>
-<blockquote>
-<code class="python" onclick="copyText(this);" style="cursor:pointer;"># getting all messages within the last second<br>
-kafka_consumer.poll(timeout_ms=1000)</code>
-</blockquote>
-<p>In this part, we have seen how Kafka works and how to create a topic, publish and consume messages through Kafka.</p>
-<h2>Apache Spark</h2>
-<h3>Introduction</h3>
-<p>Apache Spark is a distributed computing engine developed at the University of Berkeley. It was first released in 2009 and became an Open Source project in 2010.</p>
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Spark.png" style="width:50%"/></center>
-<p>It is coded in Scala, a functional programming language designed for parallel computing and map reduce operations. It also features APIs in Java (Scala is very similar to Java on many aspects), Python (Pyspark) and R (SparkR). As features are developed in Scala, it is not rare to see features that are available through Scala and Java but not through Python or R.</p>
-<h4>Differences with Hadoop</h4>
-<p>We often ear comparison between Hadoop and Spark but they are very different.</p>
-<p>First and most important, while Hadoop is at the same time a distributed file system (HDFS), a resource manager (YARN) and a coding API (Hadoop Mapreduce), Spark is only a computing engine and can be its own resource manager. Spark does not deal with storage at all.</p>
-<p>Moreover, Spark has some very handy high level libraries to deal with a lot of different types of data. We will introduce them a bit later but Hadoop Mapreduce is much less abstracted than Spark libraries.</p>
-<p>Finally, the main difference that explains the success of Spark is its speed. In 2014, a team tasked a Spark cluster and an Hadoop cluster to sort 100 Tb of data. It turned out that the Spark cluster sorted the data 3 times faster and with a cluster 10 times smaller than its competitor.<br/>
-So Spark is much faster but why is that ? As a distributed computing engine relying on MapReduce, it does basically the same operations. Moreover, Scala works on the same principle as Java, with JVM so the difference is not in the used language. <br/>
-The difference is explained during the <b>shuffle</b> step: while native Hadoop writes key-value pairs on the disk, Spark writes it on memory. Writing into and reading from memory takes a lot less time than with disk.<br/>
-But bear in mind that memory is also more expensive than disk: this means that a Spark cluster will likely cost more than a Hadoop cluster: if Spark was better at everything computation-wise, nobody would use Hadoop anymore...</p>
-<p>There is also the ability from Spark to optimize operations, to which we will come back.</p>
-<h4>Spark components</h4>
-<p>As explained before, Spark implements some interesting libraries: 
-<ul><li><b>SparkSQL</b>: a library that uses the optimization of SQL engine to perform operations on tabular data.</li>
-<li><b>SparkML</b>: a library that allows to perform training, testing and deployment of Machine Learning algorithms on distributed clusters.</li>
-<li><b>SparkStreaming</b>: a library that allows to perform a lot of different operations on streaming data.</li>
-<li><b>GraphX</b>: a library that allows to perform distributed operations on graph data.</li>
-</ul>
-</p>
-<p>Finally, the most important element of Spark is its core API: Spark Core. It deals with:
-<ul><li>I/O operations</li>
-<li>Task dispatching</li>
-<li>Job scheduling (if Spark is used as a Resource Manager)</li>
-<li>Fault recovery</li>
-</ul>
-</p>
-<h3>Data Structures and Operations</h3>
-<h4>Data Structures</h4>
-<p>In Spark, there are several data structures that can be used. The core and most low level data structure is the RDD for <b>Resilient Distributed Datasets</b>. They are immutable, meaning that you cannot change a RDD but you can only create a new RDD that will contain the changes. It is partitiionned and distributed among different machines. RDD are not structured: we can see them as lists of lists. Each line can contain different information. Finally, the evaluation in Spark being lazy, the changes are not run until needed.</p>
-<p>RDD are fine to deal with unstructured data but this also means that when data is structured, there is no check for data compliance: let's imagine you have a dataset containing information about customers. If you want to compute their average age, you will have to load all the data into the memory and then to discard data that is not interesting. </p>
-<p><b>DataFrame</b> are another type of data structure. It relies on the RDD at core but can be seen as a tabular data structure. Therefore, it has to have a fixed schema. This is useful to perform operations only on liked data. Yet it does not implement a data type safety.</p>
-<p><b>DataSet</b> is the latest and most high level data structure implemented by Spark. It is basically a DataFrame with type safety: data is checked before operations are performed, which can save a lot of time in debugging.</p>
-<p>If we go back to our example of the average age of our costumers, the DataFrame allows to load only the age column into memory while DataSet also checks that the data is of the specified type: integers.</p>
-<h4>Operations</h4>
-<p>To understand Spark optimization process, we have to define the different type of operations that you can perform on data.</p>
-<p>Operations are divided into <b>Transformations</b> and <b>Actions</b> in Spark parlance.<br/>
-Transformations are operations that will create a new RDD (or DataFrame, or Dataset). On the other hand, Actions are operations that requires the executions of transformations: for example, if you want to print the results of a Spark job or write them.</p>
-<p>Transformations are themselves divided into two categories: 
-<ul><li>narrow: transformations that can be done on each partition separately (map, filter, union, sample, ...)</li>
-<li>wide: transformations that can be done only during a reduce step (reduce, groupby, intersection, distinct, ...)</li>
-</ul></p>
-<p>The following images show different types of transformations:</p>
-###########################
-<h4>Optimization</h4>
-<p>One important aspect of Spark is its optimization process. We have said before that the evaluation is lazy: operations are not performed until we need to.</p>
-<p>In fact, when we are coding a Spark application, we add operations to a Directed Acyclic Graph (DAG). Operations are saved and when we ask for an Action rather than a Transformation, the DAG is optimized and then computed: for example, some intermediary RDD can be persisted in the memory or on the disk because they are to be used multiple times. </p>
-<p>In Spark, when we run an application, we run multiple Jobs, each one being the result of transformations and an action. Jobs are divided into stages which are individual unit of works. Stages are performed on the different partitions: a stage broken down to a partition is a task. Tasks are handled by the TaskScheduler, a daemon that organize work in Spark.</p>
-<h3>Inner Mechanisms</h3>
-<p>When a Spark application is launched, a daemon called the ApplicationMaster is launched. This daemon will then be in charge of sending requirements and code to the other daemons.<br/>
-The ApplicationMaster triggers the execution of the Driver Program. The Driver Program is in charge of the optimization process through the construction of the DAG. It also creates the SparkContext that will interact with the resource manager: it asks the resource manager for resources and the resource manager will respond by launching Executors on the different nodes. Executors are very similar to the containers in YARN: they operate JVM but also have space dedicated to memory and disk.</p>
-
-<div class="slider">
-    <center>
-        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/spark_architecture_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
-             onclick="next_slide(this, 6);return false;"/>
-    </center>
-    </div>
-<p>Spark can work into two deployment modes:
+<h2>APIs</h2>
+<p>In this part, we will show some aspects and advantages of using APIs when doing Data Science. Then, we will learn how to use <code>Flask</code> a Python library that is used to create simple APIs.</p>
+<h3>Introduction to APIs</h3>
+<p>API litterally stands for <b>Application Programming Interface</b> and is defined as <i>a set of subroutine definitions, communication protocols, and tools for building software</i>.</p>
+<p>This is very vague but you have to think of APIs as you do about a power sockets: the power socket is a set of rules: the device that you want to plug in has to have two pins that are spaced with a certain length, not more, not less, and that can handle a given voltage, a given current intensity and a given frequency. You do not know what is behind the socket: it might be a nuclear power plant, a coal power plant, solar panels or wind turbines. All you know is the specifications of the socket: the rules of the API. On the other hand, the socket does not care about what you are plugin in: it will deliver the power no matter the device.</p>
+<p>An API is based on the same principle. For example, a web API that is supposed to provide data when asked will not care about the program that is asking for data as long as it does it the right way. On the other hand, the program does not need to know what is going on the background: data may be stored in a flat file, in a relationnal database or just created on demand but this does not change anything for the program. This is very useful especially if you want to update the back end of an applcation without adapting the clients: if your data is growing and you need to change the way it is being requested but not change the code that request the data in a production environment, you can use an API that will isolate the software.</p>
+<p>This is the cornerstone of micro service architectures and some companies have made it a credo: Amazon aks its developper to create only features that are accessible through APIs and to provide the documentation for the rules of those APIs. This is a very interesting vision of development as developpers can easily use features implemented by other teams. Moreover, with a sound choice of credentials attribution, you can even commercialise your APIs or share it with partners.</p>
+<p>There are a lot of different APIs: web APIs, code APIs, … In fact, if you think about a code library, it is an API: you do not really know what is inside the functions, the classes but you have the specifications about the required arguments and about the aim of those objects.</p>
+<p>In this course, we will focus on Web APIs</p>
+<h3>Web APIs and HTTP requests</h3>
+<p>Web APIs are available through the internet and provide data interaction through HTTP requests. HTTP stands for <b>HyperText Transfer Protocol</b>. It is an Application Layer protocol (according to the OSI system) and is the standard for web communications.</p>
+<p>An HTTP request is composed of multiple elements:</p>
 <ul>
-<li>cluster mode: the ApplicationMaster is launched on a node of the cluster which will also host the Driver Program.</li>
-<li>client mode: the ApplicationMaster is launched remotely, on a device outside the cluster.</li>
-</ul></p>
-<p>Cluster mode is advised when the client connection to the cluster is bad and that we prefer a direct connection to the cluster. On the other hand, client mode offers more oversight.</p>Finally, Spark can supports different resource or cluster manager. It can works with YARN, Apache Mesos, Kubernetes but it can also be its own cluster manager, when Spark is in Stand Alone mode.</p>
-<h3>Installation</h3>
-<p>First we need to decompress the archive.</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">tar -xvf ~/spark-2.4.5-bin-hadoop2.7.tgz<br>
-mv ~/spark-2.4.5-bin-hadoop2.7 ~/spark</code>
-</blockquote>
-<p>We need to add Spark to the paths with <code>nano ~/.bashrc</code> and by pasting the following lines. </p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">export SPARK_HOME=/home/ubuntu/spark<br>
-export PATH=$PATH:$SPARK_HOME/bin<br>
-export PYSPARK_PYTHON=python3<br>
-export PYSPARK_DRIVER_PYTHON=ipython3</code>
-</blockquote>
-<p>Save, close the file and commit the changes through <code>source ~/.bashrc</code>.</p>
-<p>We only need to start the Master.</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">$SPARK_HOME/sbin/start-master.sh</code>
-</blockquote>
-<p>And the workers</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">$SPARK_HOME/sbin/start-slave.sh spark://localhost:8080</code>
-</blockquote>
-<p>Note that we have to specify where the master is.</p>
-<p>Check that both are up: </p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">jps | grep Master<br>
-jps | grep Worker</code>
-</blockquote>
-<p>You can also connect to the ports <code>8080</code> and <code>4040</code> to follow the execution of Spark Applications.</p>
-<h3>Practice</h3>
-<h4>Batch processing</h4>
-<p class="alert-danger">
-In this lesson, we will not come back on how to deal with batch processing in Spark: the lesson <b>141</b> deals with it.</p>
-<h4>Spark streaming</h4>
-<p>In this part, we will study how to deal with streaming data using <code>pyspark</code>: Scala is a difficult language that would require a whole course so it is simpler to use Python.</p>
-<h5>DStreams</h5>
-<p>Spark does not do online stream processing but uses mini-batch processing. The basic data structure is called a <b>DStream</b> and is  delimited by a time window. DStreams are similar to RDD, implements the same methods but acts if it had no limits.</p>
+<li><b>a method</b>: what to do.</li>
+<li><b>a URI</b>(Universal Resource Identificator): where to go</li>
+<li><b>a body and headers</b>: additional information </li>
+</ul>
+
+<p>The available methods are:</p>
+<ul>
+<li><code>GET</code>: query data</li>
+<li><code>PUT</code>: update data</li>
+<li><code>POST</code>: create data</li>
+<li><code>DELETE</code>: delete data</li>
+<li><code>...</code></li>
+</ul>
+
+<p>
+    URIs (or URLs, the nuance is not clear) are basically defined by multiple parts :</p>
+<ul><li>optionally the protocol: <code>http://</code> or <code>https://</code></li>
+<li>optionally <code>www.</code> to indicate that the URI is over the web.</li>
+<li>a domain name that serves as a placeholder for the ip address of the machine(s) serving the URI: <code>example.com</code></li>
+<li>an endpoint that refers to a given route of the server: <code>/</code> for example</li>
+</ul>
+<p>
+This gives us the URI <code>http://example.com/</code>
+</p>
+<p>
+To make an HTTP request from the terminal, we can use the <code>curl</code> command. The syntax to make a request is the following:
+</p>
+
+<div class="sh" id="code-9" style="margin-left: 20px;margin-right: 20px;">
+curl -X GET http://example.com
+</div>
+
+<p>
+The argument <code>-X</code> introduces the method: here <code>GET</code>. Then we can put the URI. Here we have a website so the output is an HTML file but generally, with an API, we should get XML or JSON style file that fits better data queries.<br>
+For example:
+</p>
+
+<div class="sh" id="code-10">
+curl -X GET https://jsonplaceholder.typicode.com/posts/1
+</div>
+
+<p>With this request, we receive a stringified JSON object containing information about a post. This domain name serves as a dummy API for developpers. You can see <a href="https://jsonplaceholder.typicode.com/">here</a> the specifications of the fake API. </p>
+<p>Here we have requested the post with the ID <code>1</code>. We can get all the posts with a GET request at the <code>/posts</code> endpoint. This is a pattern we commonly see: the endpoint with an ID returns an individual observation while without any ID it returns all the observations.</p>
+<p>The HTTP response is given with a body and a header. To see the headers, we can add the <code>-i</code> argument to the command.</p>
+
+<div class="sh" id="code-11">
+curl -X GET -i https://jsonplaceholder.typicode.com/posts/1
+</div>
+
+<p>In the header, you can see some information about the content of the response, ... One important thing is the status code: 200.<br>
+    Status codes are used to provide information about the success of the request:</p>
+<ul>
+<li><code>200</code>: means the request succeeded</li>
+<li><code>40X</code>: means an error on the client side</li>
+<li><code>50X</code>: means an error on the server side</li>
+</ul>
+<p>
+To perform a <code>PUT</code> request on our URI, we can use the following command:
+</p>
+
+<div class="sh" id="code-12">
+curl -X PUT -i -H "Content-Type: application/json" -d '{"id": 1, "content": "hello world"}' https://jsonplaceholder.typicode.com/posts/1
+</div>
+
+<p>
+The <code>-H</code> argument introduces the headers of the request. Here, we tell the system the shape/type of data that is sent. The <code>-d</code> argument introduces the body of the request. <br>
+The headers of the response tell us if the request failed or succeeded.
+</p>
+<h3>Flask</h3>
+<p><a href="https://flask.palletsprojects.com/en/1.1.x/">Flask</a> is a Python API that allows to build web APIs or websites. We can do a lot of things with Flask but here we will only build a simple API to serve data about users.</p>
+<p>Users data is contained in a file named <code>~/data.json</code>. You can see the content of the file by using <code>cat ~/data.json</code>.
+<p>We will provide the following functions:</p>
+<table class="table">
+<thead class="table-dark">
+<tr><th>Endpoint</th><th>Method</th><th>Function</th></tr>
+</thead>
+<tr><td>/users</td><td>GET</td><td>returns all the users data</td></tr>
+<tr><td>/users/{int:id}</td><td>GET</td><td>returns the data of the user with the specified id</td></tr>
+<tr><td>/users/{int:id}</td><td>PUT</td><td>modify data of the user with the specified id</td></tr>
+<tr><td>/users</td><td>POST</td><td>create a user with a new id and the given information</td></tr>
+<tr><td>/users/{int:id}</td><td>DELETE</td><td>delete the user with the specified id</td></tr>
+</table>
+
+<p>To build the API, first you need to open a Python file with <code>nano</code>:</p>
+
+<div class="sh" id="code-13">
+nano ~/api.py
+</div>
+
+<p>We need to implement the <code>Flask</code> class.</p>
+
+<div class="python" id="code-1">
+from flask import Flask
+api = Flask(import_name='my_api')
+</div>
+
+<p>We need to specify the <code>import_name</code> argument when instantiating the class.</p>
+<p>We will load all the data at once and then perform changes on the data:</p>
+
+<div class="python" id="code-2">
+import json
+with open('./data.json', 'r') as file:
+    data = json.load(file)
+</div>
 
 
-<div class="slider">
-    <center>
-        <img src="https://raw.githubusercontent.com/pauldechorgnat/de_help/master/static/spark_dstream_slider/image0.png" style="cursor:pointer; margin-left: auto; margin-right: auto; width:80%; height:auto;"
-             onclick="next_slide(this, 10);return false;"/>
-    </center>
-    </div>
-<p>First we will generate data with a Python script. In this example, we will simulate tweets emission. To do so, we will first create a Kafka topic to publish those tweets (make sure that a Kafka server is running).</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">~/kafka/bin/kafka-topics.sh --create --topic twitter \<br>
---zookeeper localhost:2181 \<br>
- --partitions 1 \<br>
---replication-factor 1</code>
-</blockquote>
-<p>Then to launch the emission, type in the following command.</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">python3 ~/code/tweets_producer.py</code>
-</blockquote>
-<p>Check that tweets are indeed published to the <code>twitter</code> topic by opening a consumer console.</p>
-<p>Then open a file with the following command: <code>nano ~/code/spark_streaming_tweets.py</code>. In this file, we will show simple transformations on the emitted tweets.</p>
-<p>First, to connect to the Kafka topic, we will need the following lines: </p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">from pyspark import SparkContext<br>
-spark_context = SparkContext.getOrCreate()<br>
-spark_context.setLogLevel("WARN")<br>
-from pyspark.streaming import StreamingContext<br>
-streaming_context = StreamingContext(spark_context, batchDuration=10)</code>
-</blockquote>
-<p>SparkContext is used to connect to the Resource Manager. The <code>batchDuration</code> argument is used to define the time limit for the DStreams in seconds. There are clients that allows to connect easily Spark to Kafka in a streaming context:</p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">from pyspark.streaming.kafka import KafkaUtils<br>
-kafka_stream = KafkaUtils.createDirectStream(ssc=streaming_context, topics=['twitter'], kafkaParams={'metadata.broker.list': 'localhost:9092'})</code>
-</blockquote>
-<p>You can see that we need to specify the list of brokers and the topics to connect to. <br/>For now, we will only print what we receive. Add the following lines:</p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">kafka_stream.pprint()<br>
-streaming_context.start()  # starts streaming<br>
-streaming_context.awaitTermination()  # wait for the computation to end</code>
-</blockquote>
-<p>Close and save the file.<br/> To run it, we will use a special syntax:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">spark-submit --jars ~/code/spark-streaming.jar ~/code/spark_streaming_tweets.py</code>
-</blockquote>
-<p>The jar that we specify is a file used to link Kafka to Spark.<br/>
-Once this is launched you should see the content of the DStream being printed out in the terminal.<br/>
-This is very basic but we will add other instructions. <br/> Reopen the file and paste the following lines before the <code>.pprint()</code> lines.</p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">import ast<br>
-kafka_stream = kafka_stream.map(ast.liter_eval).map(lambda x: x['user']['screen_name'])<br>
-kafka_stream.pprint()</code>
-</blockquote>
-<p>As you have seen in the batch processing part, we can use a <code>map</code> method to apply a function line by line. At the beginning, our stream is a list of strings that represent dictionaries, eg the tweets info.<br/>
-With the <code>ast.liter_eval</code> we can change a string that contains a dictionary into a dictionary. Then we can take only the user information for each tweet.<br/>
-Exit, save and launch the file to see the results.</p>
-<p>What makes Pyspark interesting to use is that the differences between stream processing and batch processing are very light: we have to implement a stream context but that is basically all. Most of the methods of RDD are usable on DStreams: <code>flatmap</code>, <code>map</code>, <code>reduceByKey</code>, ...</p>
-<p>The major difference is on the <code>take</code> and <code>collect</code> methods. You cannot use them on their own but you need to use the <code>foreachrdd</code>. <br/> And to save data onto HDFS, you can use: <code>saveAsTextFiles</code> and provide a name for the file you want your data in. </p>
-<p>
-For example, the following code, will take the tweets and count how many are sent during the time window and save the results into HDFS.</p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">from pyspark.streaming.kafka import KafkaUtils<br>
-from pyspark import SparkContext<br>
-spark_context = SparkContext.getOrCreate()<br>
-spark_context.setLogLevel("WARN")<br>
-from pyspark.streaming import StreamingContext<br>
-streaming_context = StreamingContext(spark_context, batchDuration=10)<br>
-kafka_stream = KafkaUtils.createDirectStream(ssc=streaming_context, topics=['twitter'], kafkaParams={'metadata.broker.list': 'localhost:9092'})<br>
-# emitting 1 for each line<br>
-stream1 = kafka_stream.map(lambda x: 1)<br>
-# creating a tuple to make the reduceByKey<br>
-stream2 = stream1.map(lambda x: ('key', x))<br>
-# reducing on the key, eg the first member of the tuples<br>
-stream3 = stream2.reduceByKey(lambda x, y: x + y)<br>
-#saving data <br>
-stream3.saveAsTextFiles('/twitter/count')<br>
-streaming_context.start()  # starts streaming<br>
-streaming_context.awaitTermination()  # wait for the computation to end</code>
-</blockquote>
-<p>You can launch it to see the results into HDSF</p>
-<h4>Exercises</h4>
-<p>There is a lot of place to play around with those tweets. Here we want you to do two things: 
-<ul><li>make a wordcount every 10 seconds of the words that were emitted.</li>
-<li>give the number of tweets carrying a positive sentiment and the number of tweets carrying a negative sentiment.</li>
-</ul>
-There are a lot of ways to do this, but we advise to use already known techniques, such as tokenizers that are present in the package <code>nltk</code> and to use the <a href="https://pypi.org/project/vaderSentiment/">VaderSentiment </a> algorithm to perform those calculus.</p>
-<h2>HBase</h2>
-<h3>Introduction</h3>
-<p>HBase is a distributed column oriented database management system similar to BigTable and Cassandra. It was first released in 2008 and has become a project of the Apache Foundation since then. One of the interesting aspect of HBase is that it relies heavily on HDFS for distribution.</p>
-<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/HBase.png" style="width:50%"/></center>
-<p>But why talk about a DBMS in a lesson about stream processing?<br/>Well that are two major aspect: first, regarding storage, we have only looked to document oriented and relational DBMS. Column oriented is a great addition to this portfolio. Secondly, reads and writes are quick in HBase which is very important in a streaming architecture. </p>
-<h3>Column Oriented DataBase</h3>
-<p>Column Oriented DataBases are a type of NoSQL Databases. They seem similar to RDBMS as they can be seen as tabular data in a first approach. Yet they rely on key-value pairs and the schema is much more flexible.<br/>
-Moreover they provide the advantage of storing data by column and not by row: when you have a lot of attributes for a single observation, this speeds up computation.</p>
-<p>In the following figure, you can see that columns are grouped in column families and indexed by rows. The number of columns per column family is extensible while the number of column family is more difficult to change. Columns are not typed which means that we can have multiple types in the same column.<br/> 
-In reality, each cell is represented by a key-value pair: the key is the row index and the value is the value contained by the cell: Column oriented databases are a compromise between relational and document oriented databases.</p>
-<h3>HBase inner mechanisms</h3>
-<p>Hbase has three major components.
+<p>Once the class is instantiated, we can indicate give it the functions to perform using the decorator <code>@api.route</code>. </p>
+
+<div class="python" id="code-3">
+from flask import jsonify
+@api.route('/users', methods=['GET'])
+def return_users():
+    return jsonify(data)
+</div>
+
+<p>The decorator is a special feature of Python: a decorator is used to wrap the function defined right under it. Here it is used to tell what function should be called when the URI is requested with the right method. The decorator takes the name of the endpoint and also the methods.<br>
+The <code>jsonify</code> method is used to turn data into a string that looks like a json.</p>
+<p>We just need to add the line to run the app: </p>
+
+<div class="python" id="code-4">
+if __name__ == '__main__':
+    api.run()
+</div>
+
+<p>Now save and leave the file. Launch it with: </p>
+
+
+<div class="sh" id="code-14">
+python3 ~/api.py
+</div>
+
+
+<p>By default, the API is running at the IP <code>http://localhost:5000/users</code>. You can request the data with: </p>
+
+
+<div class="sh" id="code-15">
+curl -X GET -i http://localhost:5000/users
+</div>
+
+
+<p>So our first endpoint is working. Now reopen the file, we will add the other endpoints. Add those lines before the <code>main</code> part.</p>
+
+<div class="python" id="code-5">
+from flask import abort
+
+@api.route('/users/<user_id>', methods=['GET'])
+def return_user(user_id):
+    for user in data:
+        if user['id'] == int(user_id):
+            return jsonify(user)
+    # in case the user is not found
+    abort(404)
+</div>
+
+
+<p>Here we added certain elements that are interesting: first the <code>user_id</code>. It is present in the endpoint and is the only argument of the function. Moreover, if the specified ID is not in our data, we must send an error code. 404 is generally the standard status code for a resource not found.<br>
+Leave the file and relaunch the API.<br>
+Try the following commands</p>
+
+<div class="sh" id="code-16">
+curl -X GET http://localhost:2222/users/1
+curl -X GET http://localhost:2222/users/1000
+</div>
+
+
+<p>The second one should throw a 404 error.<br>
+We can personalize the error code with the following function</p>
+
+
+<div class="python" id="code-6">
+from flask import make_response
+
+@api.errorhandler(404)
+def resource_not_found(error):
+    return make_response(jsonify({'error': 'Resource not found'}), 404)
+</div>
+
+
+<p>Note that we can personalize even more the messages by using a 410 error code into <code>abort</code> and throw a 404 error code in the <code>errorhandler</code> of the code 410.</p>
+<p>Let's reopen the file and add the last endpoints</p>
+
+
+
+<div class="python" id="code-7">
+@api.errorhandler(400)
+def bad_request(error):
+    return make_response(jsonify({'error': 'Bad request'}), 400)
+
+
+from flask import request
+@api.route('/users/<user_id>', methods=['PUT'])
+def update_user(user_id):
+    user = None
+    for u in data:
+        if u['id'] == int(user_id)
+            user = u
+            data.remove(u)
+            break
+    if not user:
+        abort(404)
+    if 'name' in request.json or 'age' in request.json:
+        if 'name' in request.json:
+            user['name'] = request.json['name']
+        if 'age' in request.json:
+            user['age'] = request.json['age']
+    else:
+        abort(401)
+    data.append(user)
+    return jsonify(user)
+
+@api.route('/users', methods=['POST'])
+def create_user():
+    new_id = max(data, key=lambda u: u.get('id')) + 1
+    new_user = {'id': new_id}
+    if 'name' in request.json:
+        new_user['name'] = request.json['name']
+    if 'age' in request.json:
+        new_user['age'] = request.json['age']
+    data.append(new_user)
+    return jsonify(new_user)
+
+@api.route('/users/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    for u in data:
+        if u['id'] == int(user_id):
+            data.remove(u)
+            return jsonify(u)
+    abort(404)
+</div>
+
+
+<p>You can try the following requests to test your API:</p>
+
+
+<div class="sh" id="code-17">
+# changing the name of the user with id 1
+curl -X PUT -i -H "application/json" -d "{'name': 'charles'}" http://localhost:5000/users/1
+# changing the job of the user with id 1
+# should throw an error
+curl -X PUT -i -H "application/json" -d "{'job': 'data scientist'}" http://localhost:5000/users/1
+# changing the name of the user with id 1000
+# should throw an error
+curl -X PUT -i -H "application/json" -d "{'name': 'charles'}" http://localhost:5000/users/1000
+# adding a new user
+curl -X POST -i -H "application/json" -d "{'name': 'daniel'}" http://localhost:5000/users
+# deleting the user with ID 42
+curl -X DELETE -i http://localhost:5000/users/42
+</div>
+
+
+<p>Here we have used an API to interact with data but we can also perform Machine Learning task provided data.</p>
+<h3>Exercise</h3>
+<p>Create a very simple API that will send a sentiment analysis score using only a GET method. The endpoint should be <code>/sentiment/<sentence></code>. There are multiple ways to perform this task but the simplest is to use <code>VaderSentiment</code>.</p>
+
+<h2>Virtualization with Docker</h2>
+<h3>Introduction to virtualization</h3>
+<p>Virtualization is the fact of mimicking parts of a machine in order to isolate a process from the rest of the machine. Isolating processes on a server is very important: it avoids version conflicts. Moreover, it allows to have a development environment which is exactly the same as the production environment.</p>
+<p>There are a lot of ways to perform virtualization:
 <ul>
-<li><b>HMasters</b>: They are the daemons in charge of maintenance and attribution. They check if the HRegion Servers are up and running and reattribute their task if they are not. They are hosted on master nodes.</li>
-<li><b>HRegion Server</b>: HRegion Servers are in charge of organizing writing and reading in the HRegions.</li>
-<li><b>HRegion</b>: they are the daemons that deal with the storing of data. </li>
+<li><b>Virtual machines</b>: virtual machines contain everything that makes a computer (OS, dedicated storage, ...). It is exactly like having a computer inside another computer.</li>
+<li><b>Containers</b>: containers are very similar to virtual machines except that they rely on the OS of the host machine.</li>
+<li><b>Virtual environments</b>: virtualization technique proper to Python that allows to isolate versions of libraries for different processes.</li>
 </ul>
+<p>In this course we will not cover virtual machines even though there is a lot of things to learn about <b>AWS</b>, <b>GCP</b>, <b>Azure</b> and other cloud providers.<br>
+We will cover quickly the virtual environments and containers.</p>
+<h3>Virtual environments</h3>
+<p>Virtual environments are the Python response to the isolation issue. Let's imagine that you have a process running on a server. This process has been coded with the <code>1.4.5</code> of a library. Later you have developed another process using a modern version of the library: <code>2.0.0</code>. To have both processes running on the same server, you need to have two version of the same library: this is not possible without virtual environments.</p>
+<p>To create a virtual environment, you can use the following command.</p>
+
+
+<div class="sh" id="code-18">
+python3 -m venv my_virtual_environment
+</div>
+
+
+<p>Once this is done, you should see that a folder <code>my_virtual_environment</code> has been created.  To activate the virtual environment, you can use:</p>
+
+
+<div class="sh" id="code-19">
+source ./my_virtual_environment/bin/activate
+</div>
+
+
+<p>You should see a <code>(my_virtual_environment)</code> indicator that tells us that the environment is activated. Now you can install any library, with the specified versions using <code>pip3</code>. </p>
+<p class="alert-info">When you create a python project, you should always create a virtual environment. You should create a file named <code>requirements.txt</code> in which you will put the name of the libraries used in your project. You can easily install libraries in a text file by using <code>pip3 install -r requirements.txt</code>. Once the project is done, to fix the libraries, you should use <code>pip3 freeze > requirements.txt</code> to get the exact versions of the libraries.</p>
+<p>To deactivate the virtual environment, you can type in <code>deactivate</code>.</p>
+<h3>Docker</h3>
+<h4>Containerization</h4>
+<p>Containerization is the next level of virtualization: we do not only encapsulate libraries, we can encapsulate complete applications. Containers are different from virtual machines as they do not encapsulate the OS. </p>
+<center><img src="https://github.com/pauldechorgnat/de_help/raw/master/static/Docker.png" style="width:50%"></center>
+<p>Docker is a technology of containerization that is used a lot today: it is light, handy and a lot of companies have developed their own containers and made them available through the <a href="https://hub.docker.com/search?q=&type=image">DockerHub</a>.</p>
+<p>Docker is very simple to use with a Linux system and implements a lot of interesting features: networks, volumes, ...</p>
+<h4>Launching a container</h4>
+<p>In this part, we will see a to launch the Docker daemon.<i>The installation of Docker is a bit long and not very interesting so it has already been done.</i><br>
+To launch the daemon, type in the following line:</p>
+
+<div class="sh" id="code-20">
+sudo service docker start
+</div>
+
+<p>We need to download an <b>image</b> of a Docker before running it: an image is not really a container. It is a pattern for containers: you can think of Docker images as classes and containers as class instances. To do so, we can use the command:</p>
+
+<div class="sh" id="code-21">
+docker pull hello-world:latest
+</div>
+
+<p><code>hello-world</code> is a dummy image to test Docker that just prints a message and shuts down the container. <br>
+Sometimes, different versions of an image are available: The <code>:</code> introduces the tag, e.g. the name of the version.<br>
+To launch this container, we can do :</p>
+
+<div class="sh" id="code-22">
+docker container run hello-world:latest
+</div>
+
+<p>If you have not run the <code>docker pull</code> before the <code>docker container run</code> command, the pulling is done before launching the container.<br>For example, run the following command to start a Ubuntu image container.</p>
+
+<div class="sh" id="code-23">
+docker container run ubuntu:latest
+</div>
+
+<p>This is not a very interesting command as it shuts down immediately. But we will see how to keep the container up and how to interact with it. We can use the <code>-it</code> flag and add the entry point, e.g. the way to enter the container:</p>
+
+<div class="sh" id="code-24">
+docker container run -it ubuntu:latest bash
+</div>
+
+<p>You can check that the container looks indeed like a Ubuntu system. You can exit it at any time using <code>exit</code>.</p>
+<p>You can list all the containers that are running by using the <code>docker container ls</code>. Here we have none but we can see the history of the dockers that were run by adding the <code>-a</code> flag.</p>
+
+<div class="sh" id="code-25">
+docker container ls -a
+</div>
+
+<p>We have seen how to list the containers but we can also list the images by using.</p>
+
+<div class="sh" id="code-26">
+docker image ls
+</div>
+
+<p>Docker containers are given a name but you can name them with the <code>--name</code> flag:</p>
+
+<div class="sh" id="code-27">
+docker container run --name my_hello_world_container hello-world:latest
+</div>
+
+<p>We can restart a stopped container by using its name:</p>
+
+<div class="sh" id="code-28">
+docker container start -a my_hello_world_container
+</div>
+
+<p>Without the <code>-a</code> flag, the container is run in detached mode.<br>Note also that  a container cannot be named with the same name as another container, up or stopped.</p>
+<p>We can remove containers that are stopped by using the command <code>docker container rm</code>: </p>
+
+<div class="sh" id="code-29">
+docker container rm my_hello_world_container
+</div>
+
+<p>If you run <code>docker container ls -a</code>, this container is not present anymore.<br>We can perform this removing task automatically by using the <code>--rm</code> flag:</p>
+
+<div class="sh" id="code-30">
+docker container run --name my_second_hello_world_container --rm hello-world:latest
+</div>
+
+<p>If you want to run a container in detached mode, e.g. in background, you can use the <code>-d</code> flag: </p>
+
+<div class="sh" id="code-31">
+docker container run -it -d --name my_ubuntu_container ubuntu:latest bash
+</div>
+
+<p>You should see it running in the command <code>docker container ls</code>. You can shut it down by using:</p>
+
+<div class="sh" id="code-32">
+docker container stop my_ubuntu_container
+docker container ls
+</div>
+
+<h4>Port forwarding</h4>
+<p>In this part, we will use the <b>ElasticSearch</b> image. ElasticSearch is a search engine that allows to look through large amounts of data very quickly. Interactions can be done through an API running at the 9200 port of the serving machine via HTTP requests. Pull the image corresponding to the <code>7.2.0</code> tag.</p>
+
+<div class="sh" id="code-33">
+docker pull elasticsearch:7.2.0
+</div>
+
+<p>To run it, you can use the following command: </p>
+
+<div class="sh" id="code-34">
+docker container run -d --rm -e "discovery.type=single-node" --name my_es_container elasticsearch:7.2.0
+</div>
+
+<p>
+The <code>-e</code> flag allows us to define an environment variable inside the container. <br>Here we define the <code>discovery.type</code> variable with the value <code>single-type</code>.
 </p>
-<p>There can be multiple HMasters but only one is active at the same time. The others are listening the active HMaster heartbeat through Zookeeper and if the active HMaster crashes, Zookeeper runs an election to select an inactive HMaster to take its place. Zookeeper is also in charge of providing the heartbeat of the HRegion Servers to the active HMaster.</p>
-<p>When data is to be written into HBase, it is redirected to a HRegion Server in function of the load balance. In this HRegion Server, the data is written as is in the <b>Write Ahead Log</b>. This write is done directly on disk. Writing on the disk may seem slow but data is of course cached when reaching the server. Writing on the disk allows to recover data in case the machine crashes.<br/>
-Data is also copied in <b>MemStores</b>. MemStores are partition of the memory of the server. There is one MemStore per column family. When the limit of one MemStore is reached, all the data in memory on this HRegion Server is written into HFiles in HDFS: HBase does not really deal with partition and replication. It is HDFS that does all the work. </p>
-<h3>Installation</h3>
-<p>First, as usual, we decompress the archive and rename the folder:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">tar xvf ~/hbase-2.1.8-bin.tar.gz<br>
-mv ~/hbase-2.1.8 ~/hbase</code>
-</blockquote>
-<p>Then we modify the paths in the file <code>~/.bashrc</code>:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">export HBASE_HOME=/home/ubuntu/hbase<br>
-export PATH=$PATH:$HBASE_HOME/bin</code>
-</blockquote>
-<p>Save and close the file. Do not forget to commit the changes with <code>source ~/.bashrc</code>.</p>
-<p>Next we need to edit the configuration file. We need to specify: 
-<ul><li>if the cluster is distributed</li>
-<li>where Hadoop namenode is running</li>
-<li>where Zookeeper is running<li>
-</li></li></ul></p>
-<p>Open the file with <code>nano</code>: <code>nano $HBASE_HOME/conf/hbase-site.xml</code> and paste those lines inside the configuration tags: </p>
-<blockquote>
-<code class="xml" onclick="copyText(this);" style="cursor:pointer;">&lt;property&gt;<br>
-&lt;name&gt;hbase.cluster.distributed&lt;/name&gt;<br>
-&lt;value&gt;true&lt;/value&gt;<br>
-&lt;/property&gt;<br>
-&lt;property&gt;<br>
-&lt;name&gt;hbase.rootdir&lt;/name&gt;<br>
-&lt;value&gt;hdfs://localhost:9000/hbase&lt;/value&gt;<br>
-&lt;/property&gt;<br>
-&lt;property&gt;<br>
-&lt;name&gt;hbase.zookeeper.property.clientPort&lt;/name&gt;<br>
-&lt;value&gt;2000&lt;/value&gt;<br>
-&lt;/property&gt;</code>
-</blockquote>
-<p>Finally, we need to edit the file <code>$HBASE_HOME/conf/hbase-env.sh</code> by pasting the following line at the end: </p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">export JAVA_HOME=/usr</code>
-</blockquote>
-<p>To launch HBase, you have to make sure that Hadoop is up and running (you can use <code>jps</code>) and launch the following command: </p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">$HBASE_HOME/bin/start-hbase.sh</code>
-</blockquote>
-<p> Once this is launched, you can check if HBase is running by doing: </p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">jps | grep HMaster<br>
-jps | grep HRegionServer<br>
-jps | grep HQuorumPeer</code>
-</blockquote>
-<h3>Practice</h3>
-<h4>HBase shell</h4>
-<p>To connect to HBase CLI, we can use <code>hbase shell</code>.  Once connected you can list all the existing tables, here there should be none, by using the <code>list</code>.
-</p>
-<p>First we will create a table named <code>test_table</code>. To do so, type in the following line: </p>
-<blockquote>
-<code class="hbase" onclick="copyText(this);" style="cursor:pointer;">create 'test_table', 'column_family1' </code>
-</blockquote>
-<p>This will create a table will one column family named <code>column_family1</code>. If we wanted to create multiple column families, we could have used: <code>create 'test_table', 'column_family1', 'column_family2', ...</code>.
-</p>
-<p>To add values to a table, we can use the <code>put</code> keyword and add the following specifications.
-<ul><li>the name of the table</li>
-<li>the id of the row</li>
-<li>the name of the column family</li>
-<li>the name of the column</li>
-<li>the value</li>
+<p>We want the API to be accessible but the following command will throw an error:</p>
+
+<div class="sh" id="code-35">
+curl -X GET -i http://localhost:9200
+</div>
+
+<p>This is because the IP of the container is not the IP of the machine serving it. To check on which IP the container is running, we can use the <code>docker inspect</code> command.</p>
+
+<div class="sh" id="code-36">
+docker inspect my_es_container
+</div>
+
+<p>The line that we want to see, for now, is the line containing the <code>IPAddress</code> argument: </p>
+
+<div class="sh" id="code-37">
+docker container inspect my_es_container | grep IPAddress
+</div>
+
+<p>The IP should be <code>172.17.0.2</code> or something similar. We can use this IP Address to run our request (change the IP if you do not have the same as us):</p>
+
+<div class="sh" id="code-38">
+curl -X GET -i http://172.17.0.2:9200
+</div>
+
+<p>This is a basic request in ElasticSearch that returns information about the ElasticSearch cluster. There, we can see that the name of the cluster is <code>docker-cluster</code>. </p>
+<p>This is great but it can be a bit tedious to worry about networking. In fact, Docker allows to forward directly the ports of the container to the port of our machine.<br>First, stop the ElasticSearch container:</p>
+
+<div class="sh" id="code-39">
+docker container stop my_es_container
+</div>
+
+<p>Thanks to the <code>--rm</code> flag, it has been removed so we can start a new container with the same name. <br>Here we are going to use the <code>-p</code> flag to indicate the port forwarding addresses.</p>
+
+<div class="sh" id="code-40">
+docker container run -d -e "discovery.type=single-node" -p 9200:9200 -p 9300:9300 --name my_es_container elasticsearch:7.2.0
+</div>
+
+<p>The <code>-p</code> flag takes the port of the container to be forwarded, the <code>:</code> separator and the port of the host machine receiving the flow.<br>
+We can check that this is working by using the command:</p>
+
+<div class="sh" id="code-41">
+curl -X GET -i http://localhost:9200
+</div>
+
+<p>We will explore the networking aspects of Docker more in the next parts<br>For now you can stop the container.</p>
+
+<div class="sh" id="code-42">
+docker container stop my_es_container
+</div>
+
+<h4>Volumes</h4>
+<p>One thing that you may not have noticed yet is that Docker containers do not persist changes. For example, if you launch a Ubuntu container:</p>
+
+<div class="sh" id="code-43">
+docker container run --name my_ubuntu_container -it ubuntu:latest bash
+</div>
+
+<p>In this container, we are going to create a file and leave the container:</p>
+
+<div class="sh" id="code-44">
+echo "hello world from Docker" > /home/test.txt
+cat /home/test.txt
+exit
+</div>
+
+<p>You can restart the container using the <code>docker start --interactive -a my_ubuntu_docker</code> command. <br>Check that the file is still there:</p>
+
+<div class="sh" id="code-45">
+cat /home/test.txt
+</div>
+
+<p>This is great but we may want to delete the docker container. Exit the container with <code>exit</code>, remove it with and relaunch a similar container:</p>
+
+<div class="sh" id="code-46">
+docker container rm my_ubuntu_container
+docker container run --name my_ubuntu_container -it ubuntu:latest bash
+</div>
+
+<p>If you try to print the content of our file, it has disappeared:</p>
+
+<div class="sh" id="code-47">
+cat /home/test.txt
+</div>
+
+<p>... should throw an error: <code>cat: /home/test.txt: No such file or directory</code>.<br>This is because changes are not persisted. To persist changes onto the disk we can use volumes.<br>To create a volume, you can use:</p>
+
+<div class="sh" id="code-48">
+docker volume create my_volume_for_ubuntu
+</div>
+
+<p>You can list all existing volume by using:</p>
+
+<div class="sh" id="code-49">
+dockre volume ls
+</div>
+
+<p> ... and inspect it with :</p>
+
+<div class="sh" id="code-50">
+docker volume inspect my_volume_for_ubuntu
+</div>
+
+    <p>You can see that a Docker volume is in fact a local repertory located at <code>/var/lib/docker/volumes/my_volume_for_ubuntu/_data</code>. <br>To mount this volume to a container, we can use the <code>--mount</code> argument. It takes multiple information separated by commas.</p>
+<ul><li><code>type=volume</code>: the type of mounting.</li>
+<li><code>src=my_volume_for_ubuntu</code>: the Docker volume to use.</li>
+<li><code>dst=/home</code> the absolute path of the directory where it is going to be mounted.</li>
 </ul>
-</p>
-<p>For example, to put the value <code>'hello'</code> at the row id <code>row_id1</code> in the table <code>test_table</code>, in the column <code>column1</code> of the column family <code>column_family1</code>, we can do the following:</p>
-<blockquote>
-<code class="hbase" onclick="copyText(this);" style="cursor:pointer;">put 'test_table', 'row_id1', 'column_family1:column1', 'hello'</code>
-</blockquote>
-<p>Note that the column does not need to exist previously.</p>
-<p>You can try some other things: </p>
-<ul><li><code>put 'test_table', 'row_id2', 'column_family1:column1', 'world'</code>: adding a new line</li>
-<li><code>put 'test_table', 'row_id1', 'column_family1:column2', 'bonjour'</code>: adding a new column</li>
-<li><code>put 'test_table', 'row_id2', 'column_family1:column1', 'le monde'</code>: modifying the value of a cell</li>
-</ul>
-</p>
-<p>There is something a bit subtle about modifying the value of a cell: you can add specifications to the table so that it keeps different versions of the same value: in this case, the present version would be changed to the new value but the previous value would be kept had we put those parameters.</p>
-<p>But you cannot add column family so easily: remember that there are daemons for each column family that are in charge of keeping data into the memory until it is flushed in HDFS: you can add a column family by using <code>alter 'test_table', 'column_family2'
-</code>.</p>
-<p>Commands to get data are very simple. We use the <code>get</code> keyword and specify what we want</p>
-<blockquote>
-<code class="hbase" onclick="copyText(this);" style="cursor:pointer;"># to get the row row_id1<br>
-get 'test_table', 'row_id1'<br>
-# to get only the column family 'column_family1' of the row 'row_id1'<br>
-get 'test_table', 'row_id1', 'column_family1'<br>
-# to get only the column 'column1' of the column family 'column_family1' of the row 'row_id1'<br>
-get 'test_table', 'row_id1', 'column_family1:column1'</code>
-</blockquote>
-<p>To delete data, we can delete:
-<ul><li>per cell: <code>delete 'test_table' 'row_id1' 'column_family2:column1'</code></li>
-<li>per row: <code>deleteall 'test_table', 'row_id2'</code></li>
-</ul>
-</p>
-<p>Finally to drop a table, we need to disable it: <code>disable 'test_table'</code> and then to drop it: <code>drop 'test_table'</code>.</p>
-<h4>Python client</h4>
-<p>Python has a package named <b>happybase</b> that is used to perform operations on HBase. It uses a ThriftServer to access data so we have to launch it.<br/>
-In a new console, launch the following command:</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">hbase thrift start -b localhost -p 9090</code>
-</blockquote>
-<p>To perform operations via happybase, we need to implement a connector:</p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">from happybase import Connection<br>
-hbase_connection = Connection(host='localhost', port=9090, autoconnect=True)</code>
-</blockquote>
-<p>We can do the same operations as before:</p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;"># list the tables<br>
-list_of_tables = hbase_connection.tables()<br>
-# create a table<br>
-hbase_connection.create_table(name='table_name',<br>
-families={'column_family1': dict(), 'cf2': dict()})<br>
-# connect to a specific table <br>
-table = hbase_connection.table(name='table_name')<br>
-# creating data into the table <br>
-table.put(row='id1', <br>
-data={'column_family1:c1':'value1'})<br>
-# close the connection <br>
-hbase_connection.close()</code>
-</blockquote>
-<p>We will not go any further on HBase as they are a lot of different commands and that all are not necessarily very interesting. If you want to explore other possibilities, you can check this <a href="https://happybase.readthedocs.io/en/latest/">link</a>.
-</p>
-<h2>Exercise</h2>
-<p>In this part, we will try to create a pipeline that gets data into HBase in real time.</p>
-<p>Here this data will be temperature sensors from 10 different sensors. Data will look like:</p>
-<blockquote>
-<code class="json" onclick="copyText(this);" style="cursor:pointer;">{<br>
-    'temperature': 25,<br>
-    'station_id': 1,<br>
-    'timestamp': 1581518005<br>
-}</code>
-</blockquote>
-<p>They will be emitted at a rythm of approximately one observation per 5 seconds per station. They will be published in the topic <code>temperature</code> (you have to create it).</p>
-<p>Through a pyspark code, you should take this data every 10 seconds, and check that it does not go over 27.5 or under 22.5. You will also need to compute the average temperature over the stations at each observation </p>
-<p>To do so, you will have to parse the data into dictionaries, reduce them to take the mean at a given timestamp and add a flag if the temperature is too high.</p>
-<p>Once this is done, you have to put the data into a HBase table: this table should be called <code>temperature</code>. Each row should be identified by the timestamp at which an observation was taken. There should be two column families. The first one, named data, should contain the average temperature over the stations. The second one named anomalies should contain an error data on an out-of-bound temperature: the temperature and the id of the station for this anomaly.</p>
-<p>Finally, the latest average temperature should be duplicated into a second row whose id is <code>latest</code> so that a client which would request the temperature should be able to request this row with only the id of the row.</p>
-<p>To store data from a DStream to HBase, you can use the <code>foreachrdd</code> and a function similar to this: </p>
-<blockquote>
-<code class="python3" onclick="copyText(this);" style="cursor:pointer;">import datetime<br>
-def put_data_into_hbase(rdd):<br>
-    connection = Connection(host='localhost', port=9090, autoconnect=True)<br>
-    table = connection.table(name='temperature')<br>
-    results = rdd.collect()<br>
-    for index, row in enumerate(results):<br>
-        table.put(row=str(datetime.datetime.now()), data={'data:avg_temp': str(row[0])})<br>
-    connection.close()</code>
-</blockquote>
-<p>To launch the script that produces data, you have to create the topic, make sure that the Kafka server is up and running and launch the script with</p>
-<blockquote>
-<code class="bash" onclick="copyText(this);" style="cursor:pointer;">python3 ~/code/temperature_generator.py</code>
-</blockquote>
-<p>Good Luck!</p></p></p></p>
+<p>We just have to delete the existing container and launch a new one with this new argument.</p>
+
+<div class="sh" id="code-51">
+docker container rm my_ubuntu_container
+docker container run -it --name my_ubuntu_container --mount type=volume,src=my_volume_for_ubuntu,dst=/home --rm ubuntu:latest bash
+</div>
+
+<p>Once the container is launched, we repeat the command:</p>
+
+<div class="sh" id="code-52">
+echo "hello world from Docker" > /home/test.txt
+</div>
+
+<p>In another console, you can see the content of the mounted directory by using the command:</p>
+
+<div class="sh" id="code-53">
+ sudo cat /var/lib/docker/volumes/my_volume_for_ubuntu/_data/test.txt
+</div>
+
+<p>You should see the <code>test.txt</code> file. You can also do this the other way round.<br>On the second terminal, type in the following command.</p>
+
+<div class="sh" id="code-54">
+echo "hello world from Ubuntu" > ~/test2.txt
+sudo mv ~/test2.txt /var/lib/docker/volumes/my_volume_for_ubuntu/_data/test2.txt
+</div>
+
+<p>You can return on the container console and run <code>cat /home/test2.txt</code>: the two folders are indeed one and the same.</p>
+<p>Now shut down the container: you can use <code>exit</code> inside the container or in the other terminal use the <code>docker container stop my_ubuntu_container</code> command.<br> Now launch a new container with the same volume parameters:</p>
+
+<div class="sh" id="code-55">
+docker container run -it --name my_ubuntu_container --mount type=volume,src=my_volume_for_ubuntu,dst=/home --rm ubuntu:latest bash
+</div>
+
+<p>Run the command <code>ls /home/</code>: the files are still present. You can also open a third terminal and launch another container mounted on the same volume:</p>
+
+<div class="sh" id="code-56">
+docker container run -it --name my_ubuntu_container2 --mount type=volume,src=my_volume_for_ubuntu,dst=/home --rm ubuntu:latest bash
+</div>
+
+<p>Run the command <code>ls /home/</code>: the files are also present.<br>You can shutdown both containers.</p>
+<p>Finally, we can also delete the volume by using</p>
+
+<div class="sh" id="code-57">
+docker volume rm my_volume_for_ubuntu
+</div>
+
+<h4>Networks</h4>
+<p>Networks are used to make different dockers work together. This allows communication to go directly from a container to another without passing by the host machine.<br>To list the networks, you can use: </p>
+
+<div class="sh" id="code-58">
+docker network ls
+</div>
+
+<p>By default there are only two networks: <code>host</code> and <code>bridge</code>. <br>In one terminal, launch an ElasticSearch container:</p>
+
+<div class="sh" id="code-59">
+docker container rm my_es_container
+docker container run -d --rm -e "discovery.type=single-node" --name my_es_container elasticsearch:7.2.0
+</div>
+
+<p>In another terminal inspect the container:</p>
+
+<div class="sh" id="code-60">
+docker container inspect my_es_container
+</div>
+
+<p>One of the last attribute of the container is <code>Networks</code>. You can see here that by default it is running on the <code>bridge</code> network. If you do not specify the network, it is this network that will be chosen.<br>
+You can also see which containers are running on a network if you do:</p>
+
+<div class="sh" id="code-61">
+docker network inspect bridge
+</div>
+
+<p>Under the attribute <code>Containers</code>, you can see the containers that are running on this network.<br>Now stop the container and start another one on the <code>host</code> network by adding the <code>--network</code> argument:</p>
+
+<div class="sh" id="code-62">
+docker container stop my_
+docker container run -d --rm -e "discovery.type=single-node" --network host --name my_es_container elasticsearch:7.2.0
+</div>
+
+<p>The host network is actually the IP of the host machine that is used. You can see this by doing the HTTP request to get information on the ElasticSearch cluster:</p>
+
+<div class="sh" id="code-63">
+curl -X GET localhost:9200
+</div>
+
+<p>The <code>host</code> network is useful when you do not want to worry about networking at all. Yet the idea behind Docker networks is to isolate communications between  containers.<br>If a process requires multiple containers to run, you want them to be able to communicate between them without interference from other containers. </p>
+<p>To create a network, we can use the following command:</p>
+
+<div class="sh" id="code-64">
+docker network create my_network
+</div>
+
+<p>List the networks with <code>docker network ls</code> and your new network should appear. Now we can use the <code>--network</code> argument to link a container to this network:</p>
+
+<div class="sh" id="code-65">
+docker container stop my_es_container
+docker container run -d --rm -e "discovery.type=single-node" --network my_network --name my_es_container elasticsearch:7.2.0
+</div>
+
+<p>To run HTTP queries on the network, we are going to use the <code>appropriate/curl:latest</code> image. First, we need to know the IP address of the container:</p>
+
+<div class="sh" id="code-66">
+docker container inspect my_es_container | grep IPAddress
+</div>
+
+<p>The address should be something like: <code>172.18.0.2</code>. Note that the second figure has been incremented by 1 as this represents a new network. Previously, when the network was the default one, e.g. the bridge network, it was <code>172.17.0.2</code>. If you had containers to this network it is the last number that is incremented. <br>To run the HTTP request, you can use the following command (if the IP is not the same, change it):</p>
+
+<div class="sh" id="code-67">
+docker container run --network my_network appropriate/curl -fsSL http://172.18.0.2:9200
+</div>
+
+<p>You should get the same result as before. An interesting feature is that if you want to avoid looking for the actual address of the container, you can refer to it via its name:</p>
+
+<div class="sh" id="code-68">
+docker container run --network my_network appropriate/curl -fsSL http://my_es_container:9200
+</div>
+
+<p>This should work as well.</p>
+<p>Finally you can delete the network by using <code>docker network rm my_network</code> but you have to make sure that the containers hosted by this network are deleted.</p>
+<h4>DockerFile</h4>
+<p>So far, we have seen how to deal with pre-existing images but you can create your own images thanks to the <b>DockerFile</b>.  <br>Working with pre-existing images is great because you can very easily deploy complex tools (for those who have done the course on Hadoop, there are images containing ready Hadoop installations), in a single line and to interact with it very easily. You can of course simulate the use of those or as easily use the Docker containers in the production environment. But when you need to make your application work in the production environment as well as in your home environment, you can use Docker to encapsulate your application: the isolation from the host machine will guarantee that the application will work.</p>
+<p>DockerFile are in facts simple text files containing the blue print of the image.</p>
+<p>We will encapsulate our Flask API from before. First we need to open the DockerFile with <code>nano</code></p>
+
+<div class="sh" id="code-69">
+nano ~/dockerfiles/DockerFile
+</div>
+
+<p>A lot of Docker images inherit from another Docker image. To get a very basic set up, you can use the Debian image. In the DockerFile, the first line should be:</p>
+
+<div class="dockerfile" id="1001">
+FROM debian:latest
+</div>
+
+<p>Then we can execute bash commands inside the image using <code>RUN</code>: </p>
+
+<div class="sh" id="code-70">
+RUN apt-get update && apt-get install python3-pip -y && pip3 install flask==1.1.1
+</div>
+
+<p>Using <code>&&</code> allows us to speed up the processes: multiple commands are executed at once and this lightens the image.<br>Next, we need to add files to the image: the Python script and the data file. To do so, we can use the <code>ADD</code> keyword:</p>
+
+<div class="dockerfile" id="1002">
+ADD /home/ubuntu/api.py /my_app_folder/api.py
+ADD /home/ubuntu/data.json /my_app_folder/data.json
+</div>
+
+<p>In fact, <code>ADD</code> works a lot like the <code>cp</code> in Bash except that we are taking files from the local file system and copy them to the image.</p>
+<p>Next, to launch the app, we need to change present working directory. The <code>WORKDIR</code> keyword is used a bit as <code>cd</code>:</p>
+
+<div class="dockerfile" id="1003">
+WORKDIR /my_app_folder/
+</div>
+
+<p>Next, we have seen that our application is running on the port 5000 of the host machine, so we need to expose the port 5000: this will allow us to do port forwarding or to request the container by going on the same network:</p>
+
+<div class="dockerfile" id="1004">
+EXPOSE 5000
+</div>
+
+<p>Finally, we need a command to launch when the container is launched:</p>
+
+<div class="dockerfile" id="1005">
+CMD python3 api.py
+</div>
+
+<p>You can now leave the file after saving it: we are ready to build the image. To build the image from a DockerFile, we can do the following:</p>
+
+<div class="sh" id="code-71">
+docker image build /home/ubuntu/dockerfiles/ -t my_image_for_flask
+</div>
+
+<p>You can see that we do not indicate a file but a context, e.g. a folder containing the DockerFile. This means that if you need to refer to certain files in the DockerFile and you want to use the relative path, it has to be from this folder. <br>The <code>-t</code> argument is used to name and optionally add a tag to your image. By default, the tag is <code>:latest</code>. <br>Now that our build is successful, we can run launch our own image:</p>
+
+<div class="sh" id="code-72">
+docker container run -d --name my_own_container -p 5000:5000 my_image_for_flask:latest
+</div>
+
+<p>You can now run the command we have used before to get all the users:</p>
+
+<div class="sh" id="code-73">
+curl -X GET http://localhost:5000/users
+</div>
+
+<p>Now that we have our image, you can see how easily we can take this image and use this image into a production server where you only need Docker to get a whole application running. <br>To export an image and send it to the production server (without going through a git repo or through DockerHub), we can use :</p>
+
+<div class="sh" id="code-74">
+docker image save --output ~/my_image_for_flask.tar my_image_for_flask
+</div>
+
+<p>To go from the tar file to the image, we can do the reverse thing:</p>
+
+<div class="sh" id="code-75">
+docker image load -i ~/my_image_for_flask.tar my_image_for_flask
+</div>
+
+<p>We will just end this part by doing a quick recap of the main commands used in a DockerFile:</p>
+<table class="table">
+<thead class="table-dark">
+<tr><th>Command</th><th>Function</th></tr>
+</thead>
+<tr><td><code>FROM</code> image_name:tag</td><td>inherit the image from another image</td></tr>
+<tr><td><code>RUN</code> bash_ command></td><td>run bash commands</td></tr>
+<tr><td><code>ADD</code> path_to_local_file path_to_file_in_the_image</td><td>copy file from the local file system to the image</td></tr>
+<tr><td><code>WORKDIR</code> path_in_the_image</td><td>change the current working directory</td></tr>
+<tr><td><code>EXPOSE</code> port </td><td>expose a port</td></tr>
+<tr><td><code>CMD</code></td><td>command launched when the container is started</td></tr>
+<tr><td><code>ENTRYPOINT bash_command</code></td><td>define the interactive modes</td></tr>
+<tr><td><code>ENV variable value</code></td><td>define environment variables inside the image</td></tr>
+<tr><td><code>VOLUME</code> [mounting_point]</td><td>mount points to be created</td></tr>
+<tr><td><code>LABEL</code></td><td>add metadata to the image</td></tr>
+</table>
+<p>There are other commands that can be used but these are the main ones. For more information, you can go to the <a href="https://docs.docker.com/engine/reference/builder/">reference</a>.</p>
+<h4>Docker Compose</h4>
+<p>In this last part on Docker, we will rapidly cover Docker compose: Docker compose is a tool that allows to deploy several containers at the same time with given settings.<br>
+In a file named <code>~/docker-compose.yml</code>, paste the following lines:</p>
+
+<div class="yaml" id="code-1000">
+version: '3.2'
+services:
+  jupyter:
+    image: jupyter/minimal-notebook
+    container_name: my_jupyter_from_compose
+    networks:
+      - my_network_from_compose
+    ports:
+      - target: 8888
+        published: 4444
+        protocol: tcp
+        mode: host
+    environment:
+      JUPYTER_TOKEN: 'password'
+  elasticsearch:
+    image: elasticsearch:7.2.0
+    container_name: my_es_from_compose
+    networks:
+      - my_network_from_compose
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      discovery.type: single-node
+networks:
+  my_network_from_compose:
+</div>
+
+<p>If we take a look at the code in this file, we first have to specify the version of docker-compose that we will be using. Then the argument <code>services</code> introduces the containers. Our first container is an instance from the <code>jupyter/minimal-notebook</code>. <br>The name of this container will be <code>my_jupyter_from_compose</code>. It will use the network <code>ubuntu_my_network_from_compose</code> and forward the port 8888 of the container to the port 4444 of the host machine. Finally, we define an environment variable: <code>JUPYTER_TOKEN</code> is set to <code>password</code>. </p>
+<p>Information for the second container is very similar except for the ports: the syntax is much simpler. It is a simple ElasticSearch container.<br>
+Finally, the last part is used to give the networks that will be used.<br>
+You can leave the file and launch the following command to start both containers:</p>
+
+<div class="sh" id="code-76">
+docker-compose up
+</div>
+
+<p>Open a new terminal and check the running containers.</p>
+
+<div class="sh" id="code-77">
+docker container ls
+</div>
+
+<p>You can also inspect the network:</p>
+
+<div class="sh" id="code-78">
+docker network inspect ubuntu_my_network_from_compose
+</div>
+
+<p>Now open the port of your machine at port 4444: you should see a Jupyter notebook invite. You can enter Jupyter with the password <code>password</code>.  Then open a new notebook, paste the following Python code in a cell and run it: </p>
+
+
+<div class="python" id="code-8">
+import requests
+import pprint
+import json
+
+content = json.loads(requests.get('http://my_es_from_compose:9200').content)
+
+pprint.pprint(content)
+</div>
+
+<p>By printing the result you can see that we are indeed connected to the same network as our ElasticSearch container.<br>
+Docker-compose is a useful tool to deploy easily a complex infrastructure of multiple containers. There are a lot of other <a href="https://docs.docker.com/compose/compose-file/">parameters</a> but this is not the aim of this course.</p>
+<p>Docker is a very interesting tool that allow us to deploy very easily complex apps and isolate their environment from the host machine which makes deployment very easy.</p>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.3.3/ace.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    change_code = function(language='python'){
+        var divs = document.getElementsByClassName(language);
+        for (var i=0; i<divs.length; i++){
+            var element = divs[i];
+            element.style['margin'] = '20px';
+            // element.style['border-radius'] = '5px';
+
+            var nb_lines = element.innerHTML.split('\n').length;
+            element.style.height = (nb_lines * 12) + 'px';
+            var editor = ace.edit(divs[i].id);
+            editor.setTheme("ace/theme/monokai");
+            editor.session.setMode("ace/mode/" + language);
+            editor.setReadOnly(true);
+            }
+        }
+    var languages = ['python', 'sql', 'sh', 'json', 'dockerfile', 'yaml'];
+    for (var l=0; l<languages.length; l++){
+        change_code(languages[l]);
+    }
+
+</script>
 <script>
     next_slide = function(element, number_of_images){
-        var image_name = element.src.match('image[0-9]+\.png')[0];
+        var image_name = element.src.match('image[0-9]+\\.png')[0];
         var new_image_number = (Number.parseInt(image_name.match('[0-9]+')) + 1) % number_of_images;
         var new_image_path = 'image' + new_image_number + '.png';
-        element.src = element.src.replace(RegExp('image[0-9]+\.png'), new_image_path);
+        element.src = element.src.replace(RegExp('image[0-9]+\\.png'), new_image_path);
         return false;
     }
 </script>
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
 
-<script>
-hljs.configure({useBR: true});
-document.addEventListener('DOMContentLoaded', (event) => {
-  document.querySelectorAll('blockquote code').forEach((block) => {
-    hljs.highlightBlock(block);
-  });
-});
-</script>
-<script>
-    evt = document.createEvent("HTMLEvents");
-    evt.initEvent('DOMContentLoaded');
-    document.dispatchEvent(evt);
-</script>
+
+
 <script>
     function copyText(element) {
       var range, selection, worked;
@@ -668,14 +884,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
       }
     }
 </script>
-<style>
-    body {
-        font-family: Source Sans Pro,sans-serif;
-        }
-    .slider {
-        width:80%;
-        margin-left: auto;
-        margin-right: auto;
-        height:auto;
-    }
-</style>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</div>
+</body>
